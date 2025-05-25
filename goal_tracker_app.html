@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamGoals - Professional Goal Tracking</title>
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --dark-bg: #0f0f14;
+            --card-bg: rgba(26, 26, 31, 0.95);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(240, 147, 251, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            33% { transform: translateX(-20px) translateY(20px); }
+            66% { transform: translateX(20px) translateY(-20px); }
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 15, 20, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            z-index: 1000;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-primary);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Dashboard View */
+        .dashboard {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .twitch-bg { background: rgba(145, 70, 255, 0.2); color: #9146ff; }
+        .youtube-bg { background: rgba(255, 0, 0, 0.2); color: #ff0000; }
+        .tiktok-bg { background: rgba(255, 0, 80, 0.2); color: #ff0050; }
+        .kick-bg { background: rgba(83, 252, 24, 0.2); color: #53fc18; }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-progress {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-progress-bar {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .stat-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Goal Overview */
+        .goal-overview {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .goal-overview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .goal-overview-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-progress {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            height: 32px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .main-progress-bar {
+            height: 100%;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .main-progress-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .setting-group {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .setting-group h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Overlay Generator */
+        .overlay-generator {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .overlay-url {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* View States */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-color: var(--success);
+        }
+
+        .notification.warning {
+            border-color: var(--warning);
+        }
+
+        .notification.error {
+            border-color: var(--danger);
+        }
+
+        /* Analytics */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: 300px;
+        }
+
+        /* User Profile */
+        .profile-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-handle {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Goal Templates */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .template-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-card:hover {
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .template-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .template-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">StreamGoals</div>
+            <div class="nav-links">
+                <a href="#" class="nav-link active" data-view="dashboard">Dashboard</a>
+                <a href="#" class="nav-link" data-view="analytics">Analytics</a>
+                <a href="#" class="nav-link" data-view="settings">Settings</a>
+                <a href="#" class="nav-link" data-view="overlay">Overlay</a>
+            </div>
+            <div class="user-menu">
+                <button class="btn btn-secondary" onclick="showProfile()">
+                    <i class="fas fa-user"></i>
+                    Profile
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard View -->
+        <div id="dashboard" class="view active">
+            <div class="dashboard">
+                <!-- Goal Overview -->
+                <div class="goal-overview">
+                    <div class="goal-overview-header">
+                        <h2 class="goal-overview-title" id="mainGoalTitle">Total Followers Goal</h2>
+                        <div style="display: flex; gap: 1rem;">
+                            <span style="color: var(--text-secondary); font-size: 0.9rem;" id="connectionStatus">
+                                <i class="fas fa-circle" style="color: #ef4444;"></i>
+                                Disconnected
+                            </span>
+                            <button class="btn btn-secondary" onclick="resetGoals()">
+                                <i class="fas fa-refresh"></i>
+                                Reset
+                            </button>
+                            <button class="btn btn-primary" onclick="simulateGrowth()">
+                                <i class="fas fa-chart-line"></i>
+                                Simulate Growth
+                            </button>
+                        </div>
+                    </div>
+                    <div class="main-progress">
+                        <div class="main-progress-bar" id="mainProgressBar" style="width: 0%"></div>
+                    </div>
+                    <div class="main-progress-text" id="mainProgressText">0 / 100</div>
+                </div>
+
+                <!-- Platform Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Twitch</div>
+                            <div class="stat-icon twitch-bg">
+                                <i class="fab fa-twitch"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="twitchFollowers">0</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar twitch-bg" id="twitchProgress" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-footer">
+                            <span>Followers</span>
+                            <span>Goal: <span id="twitchGoal">25</span></span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">YouTube</div>
+                            <div class="stat-icon youtube-bg">
+                                <i class="fab fa-youtube"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="youtubeSubscribers">0</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar youtube-bg" id="youtubeProgress" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-footer">
+                            <span>Subscribers</span>
+                            <span>Goal: <span id="youtubeGoal">25</span></span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">TikTok</div>
+                            <div class="stat-icon tiktok-bg">
+                                <i class="fab fa-tiktok"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="tiktokFollowers">0</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar tiktok-bg" id="tiktokProgress" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-footer">
+                            <span>Followers</span>
+                            <span>Goal: <span id="tiktokGoal">25</span></span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Kick</div>
+                            <div class="stat-icon kick-bg">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="kickFollowers">0</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar kick-bg" id="kickProgress" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-footer">
+                            <span>Followers</span>
+                            <span>Goal: <span id="kickGoal">25</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics View -->
+        <div id="analytics" class="view">
+            <div class="settings-panel">
+                <h2 style="margin-bottom: 1.5rem;">Analytics Dashboard</h2>
+                <div class="analytics-grid">
+                    <div class="chart-container">
+                        <h3 style="margin-bottom: 1rem;">Growth Over Time</h3>
+                        <div style="display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-secondary);">
+                            <i class="fas fa-chart-line" style="font-size: 3rem; margin-right: 1rem;"></i>
+                            <div>
+                                <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Coming Soon</div>
+                                <div>Detailed analytics and growth charts</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3 style="margin-bottom: 1rem;">Platform Breakdown</h3>
+                        <div style="display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-secondary);">
+                            <i class="fas fa-chart-pie" style="font-size: 3rem; margin-right: 1rem;"></i>
+                            <div>
+                                <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Coming Soon</div>
+                                <div>Platform performance breakdown</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settings" class="view">
+            <div class="settings-panel">
+                <h2 style="margin-bottom: 1.5rem;">Goal Settings</h2>
+                
+                <!-- Goal Templates -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Quick Setup Templates</h3>
+                    <div class="template-grid">
+                        <div class="template-card" onclick="applyTemplate('newStreamer')">
+                            <div class="template-title">New Streamer</div>
+                            <div class="template-description">Conservative goals for beginners</div>
+                        </div>
+                        <div class="template-card" onclick="applyTemplate('growing')">
+                            <div class="template-title">Growing Channel</div>
+                            <div class="template-description">Moderate goals for established streamers</div>
+                        </div>
+                        <div class="template-card" onclick="applyTemplate('ambitious')">
+                            <div class="template-title">Ambitious Goals</div>
+                            <div class="template-description">High targets for rapid growth</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <h4>Streamer.bot Connection</h4>
+                        <div class="form-group">
+                            <label>Server IP</label>
+                            <input type="text" id="streamerbotServer" class="form-control" value="127.0.0.1" placeholder="127.0.0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>WebSocket Port</label>
+                            <input type="number" id="streamerbotPort" class="form-control" value="8080" placeholder="8080">
+                        </div>
+                        <div class="form-group">
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-secondary" onclick="testConnection()" style="flex: 1;">
+                                    <i class="fas fa-network-wired"></i>
+                                    Test Connection
+                                </button>
+                                <button class="btn btn-primary" onclick="reconnectStreamerBot()" style="flex: 1;">
+                                    <i class="fas fa-plug"></i>
+                                    Connect
+                                </button>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Status:</strong> <span id="connectionStatusText">Disconnected</span>
+                            </div>
+                            <details style="margin-top: 0.5rem;">
+                                <summary style="cursor: pointer; color: var(--text-secondary);">Troubleshooting Tips</summary>
+                                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">
+                                    <p><strong>⚠️ IMPORTANT - File Protocol Issue:</strong></p>
+                                    <div style="background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 4px; margin: 0.5rem 0;">
+                                        <p style="margin: 0; color: #ef4444;">You're running this from a file:// URL. WebSocket connections require an HTTP server.</p>
+                                    </div>
+                                    <p><strong>Quick Solutions:</strong></p>
+                                    <ul style="margin-left: 1rem;">
+                                        <li><strong>Python:</strong> <code>python -m http.server 8000</code></li>
+                                        <li><strong>Node.js:</strong> <code>npx http-server</code></li>
+                                        <li><strong>VS Code:</strong> Install "Live Server" extension</li>
+                                        <li><strong>Chrome:</strong> Launch with --allow-file-access-from-files flag</li>
+                                    </ul>
+                                    <p>Then access via <code>http://localhost:8000</code></p>
+                                    <hr style="margin: 1rem 0; border-color: rgba(255,255,255,0.1);">
+                                    <p><strong>1. Check Streamer.bot WebSocket Server:</strong></p>
+                                    <ul style="margin-left: 1rem;">
+                                        <li>Open Streamer.bot → Servers/Clients → WebSocket Server</li>
+                                        <li>Ensure "Auto Start" is enabled</li>
+                                        <li>Default port should be 8080</li>
+                                        <li>Click "Start" if it's not running</li>
+                                    </ul>
+                                    <p><strong>2. Firewall/Network:</strong></p>
+                                    <ul style="margin-left: 1rem;">
+                                        <li>Allow Streamer.bot through Windows Firewall</li>
+                                        <li>Try disabling antivirus temporarily</li>
+                                        <li>Check if port 8080 is blocked</li>
+                                    </ul>
+                                    <p><strong>3. Browser Issues:</strong></p>
+                                    <ul style="margin-left: 1rem;">
+                                        <li>Use Chrome/Edge (best compatibility)</li>
+                                        <li>Allow mixed content if using HTTP</li>
+                                        <li>Check browser console for errors (F12)</li>
+                                    </ul>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                    <div class="setting-group">
+                        <h4>Main Goal</h4>
+                        <div class="form-group">
+                            <label>Goal Type</label>
+                            <select id="mainGoalType" class="form-control">
+                                <option value="followers">Total Followers</option>
+                                <option value="subscribers">Total Subscribers</option>
+                                <option value="donations">Donations ($)</option>
+                                <option value="viewers">Peak Viewers</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Target</label>
+                            <input type="number" id="mainGoalTarget" class="form-control" value="100" min="1">
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <h4>Twitch Goals</h4>
+                        <div class="form-group">
+                            <label>Followers</label>
+                            <input type="number" id="twitchFollowerGoal" class="form-control" value="25" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Subscribers</label>
+                            <input type="number" id="twitchSubGoal" class="form-control" value="10" min="0">
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <h4>YouTube Goals</h4>
+                        <div class="form-group">
+                            <label>Subscribers</label>
+                            <input type="number" id="youtubeSubGoal" class="form-control" value="25" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Likes</label>
+                            <input type="number" id="youtubeLikeGoal" class="form-control" value="50" min="0">
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <h4>Other Platforms</h4>
+                        <div class="form-group">
+                            <label>TikTok Followers</label>
+                            <input type="number" id="tiktokFollowerGoal" class="form-control" value="25" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Kick Followers</label>
+                            <input type="number" id="kickFollowerGoal" class="form-control" value="25" min="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn btn-primary" onclick="saveSettings()">
+                        <i class="fas fa-save"></i>
+                        Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlay View -->
+        <div id="overlay" class="view">
+            <div class="overlay-generator">
+                <h2 style="margin-bottom: 1.5rem;">OBS Overlay Generator</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Generate a browser source URL for your streaming software (OBS, Streamlabs, etc.)
+                </p>
+                
+                <div class="form-group">
+                    <label>Overlay Theme</label>
+                    <select id="overlayTheme" class="form-control">
+                        <option value="dark">Dark Theme</option>
+                        <option value="light">Light Theme</option>
+                        <option value="minimal">Minimal</option>
+                        <option value="vibrant">Vibrant</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Position</label>
+                    <select id="overlayPosition" class="form-control">
+                        <option value="bottom">Bottom Center</option>
+                        <option value="top">Top Center</option>
+                        <option value="left">Left Side</option>
+                        <option value="right">Right Side</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" onclick="generateOverlay()" style="margin-bottom: 1rem;">
+                    <i class="fas fa-link"></i>
+                    Generate Overlay URL
+                </button>
+                
+                <div class="overlay-url" id="overlayUrl" style="display: none;">
+                    <strong>Browser Source URL:</strong><br>
+                    <span id="generatedUrl"></span>
+                </div>
+                
+                <div style="margin-top: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem;">How to use:</h4>
+                    <ol style="color: var(--text-secondary); line-height: 1.6;">
+                        <li>Copy the generated URL above</li>
+                        <li>In OBS, add a new "Browser Source"</li>
+                        <li>Paste the URL and set Width: 1920, Height: 1080</li>
+                        <li>Position and resize as needed</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@streamerbot/client@1.9.5/dist/streamerbot-client.min.js"></script>
+    <script>
+        // Application State
+        let appState = {
+            goals: {
+                twitch: { followers: 0, subscribers: 0 },
+                youtube: { subscribers: 0, likes: 0 },
+                tiktok: { followers: 0, likes: 0 },
+                kick: { followers: 0 },
+                donations: { total: 0 },
+                viewers: { peak: 0 }
+            },
+            settings: {
+                mainGoal: { type: 'followers', target: 100 },
+                twitch: { followers: 25, subscribers: 10 },
+                youtube: { subscribers: 25, likes: 50 },
+                tiktok: { followers: 25 },
+                kick: { followers: 25 }
+            },
+            user: {
+                name: 'StreamGoals User',
+                handle: '@streamgoals',
+                avatar: 'SG'
+            }
+        };
+
+        // Initialize Application
+        function initApp() {
+            loadSettings();
+            updateAllGoals();
+            updateConnectionStatus();
+            connectStreamerBot();
+            setupNavigation();
+        }
+
+        // Navigation
+        function setupNavigation() {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const viewName = link.dataset.view;
+                    showView(viewName);
+                    
+                    // Update active nav link
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            });
+        }
+
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove('active');
+            });
+            document.getElementById(viewName).classList.add('active');
+        }
+
+        // Goal Management
+        function updateGoal(platform, metric) {
+            const current = appState.goals[platform][metric];
+            const target = appState.settings[platform][metric];
+            const percentage = Math.min((current / target) * 100, 100);
+            
+            // Update UI elements
+            const followerElement = document.getElementById(`${platform}${metric.charAt(0).toUpperCase() + metric.slice(1)}`);
+            const goalElement = document.getElementById(`${platform}Goal`);
+            const progressElement = document.getElementById(`${platform}Progress`);
+            
+            if (followerElement) followerElement.textContent = current;
+            if (goalElement) goalElement.textContent = target;
+            if (progressElement) progressElement.style.width = percentage + '%';
+            
+            // Check for goal completion
+            if (current >= target && current === target) {
+                celebrateGoal(platform);
+            }
+            
+            updateMainGoal();
+        }
+
+        function updateMainGoal() {
+            const type = appState.settings.mainGoal.type;
+            const target = appState.settings.mainGoal.target;
+            let current = 0;
+            
+            switch(type) {
+                case 'followers':
+                    current = appState.goals.twitch.followers + appState.goals.tiktok.followers + appState.goals.kick.followers;
+                    break;
+                case 'subscribers':
+                    current = appState.goals.twitch.subscribers + appState.goals.youtube.subscribers;
+                    break;
+                case 'donations':
+                    current = appState.goals.donations.total;
+                    break;
+                case 'viewers':
+                    current = appState.goals.viewers.peak;
+                    break;
+            }
+            
+            const percentage = Math.min((current / target) * 100, 100);
+            
+            document.getElementById('mainProgressText').textContent = `${current} / ${target}`;
+            document.getElementById('mainProgressBar').style.width = percentage + '%';
+            
+            // Update title
+            const titles = {
+                'followers': 'Total Followers Goal',
+                'subscribers': 'Total Subscribers Goal',
+                'donations': 'Donation Goal ($)',
+                'viewers': 'Peak Viewers Goal'
+            };
+            document.getElementById('mainGoalTitle').textContent = titles[type];
+            
+            if (current >= target && current === target) {
+                celebrateGoal('main');
+            }
+        }
+
+        function updateAllGoals() {
+            updateGoal('twitch', 'followers');
+            updateGoal('youtube', 'subscribers');
+            updateGoal('tiktok', 'followers');
+            updateGoal('kick', 'followers');
+            updateMainGoal();
+        }
+
+        function celebrateGoal(platform) {
+            showNotification(`🎉 ${platform.charAt(0).toUpperCase() + platform.slice(1)} goal completed!`, 'success');
+        }
+
+        // Streamer.bot Integration
+        let streamerbotClient = null;
+        let connectionStatus = 'disconnected';
+
+        function connectStreamerBot() {
+            try {
+                // Get connection settings from URL parameters or use defaults
+                const params = new URLSearchParams(window.location.search);
+                const server = params.get('server') || '127.0.0.1';
+                const port = params.get('port') || '8080';
+                
+                // Try to connect to Streamer.bot WebSocket
+                if (typeof StreamerbotClient !== 'undefined') {
+                    streamerbotClient = new StreamerbotClient({
+                        host: server,
+                        port: port,
+                        subscribe: {
+                            Twitch: ['Follow', 'Sub', 'Bits', 'Donation'],
+                            YouTube: ['Sub', 'Like'],
+                            TikTok: ['Follow', 'Like'],
+                            Kick: ['Follow'],
+                            General: ['Custom']
+                        }
+                    });
+
+                    // Connection event handlers
+                    streamerbotClient.on('connected', () => {
+                        connectionStatus = 'connected';
+                        updateConnectionStatus();
+                        showNotification('Connected to Streamer.bot!', 'success');
+                        console.log('Connected to Streamer.bot');
+                    });
+
+                    streamerbotClient.on('disconnected', () => {
+                        connectionStatus = 'disconnected';
+                        updateConnectionStatus();
+                        showNotification('Disconnected from Streamer.bot', 'warning');
+                        console.log('Disconnected from Streamer.bot');
+                        
+                        // Fall back to simulation mode
+                        setTimeout(() => {
+                            if (connectionStatus === 'disconnected') {
+                                startSimulation();
+                                showNotification('Using simulation mode', 'warning');
+                            }
+                        }, 5000);
+                    });
+
+                    // Twitch Events
+                    streamerbotClient.on('Twitch.Follow', (data) => {
+                        console.log('Twitch Follow:', data);
+                        appState.goals.twitch.followers++;
+                        updateGoal('twitch', 'followers');
+                        showNotification(`New Twitch follower: ${data.user?.display_name || 'Unknown'}!`, 'success');
+                    });
+
+                    streamerbotClient.on('Twitch.Sub', (data) => {
+                        console.log('Twitch Sub:', data);
+                        appState.goals.twitch.subscribers++;
+                        updateGoal('twitch', 'subscribers');
+                        showNotification(`New Twitch subscriber: ${data.user?.display_name || 'Unknown'}!`, 'success');
+                    });
+
+                    streamerbotClient.on('Twitch.Donation', (data) => {
+                        console.log('Donation:', data);
+                        const amount = parseFloat(data.amount || 0);
+                        appState.goals.donations.total += amount;
+                        updateMainGoal();
+                        showNotification(`New donation: ${amount.toFixed(2)}!`, 'success');
+                    });
+
+                    // YouTube Events
+                    streamerbotClient.on('YouTube.Sub', (data) => {
+                        console.log('YouTube Sub:', data);
+                        appState.goals.youtube.subscribers++;
+                        updateGoal('youtube', 'subscribers');
+                        showNotification(`New YouTube subscriber!`, 'success');
+                    });
+
+                    streamerbotClient.on('YouTube.Like', (data) => {
+                        console.log('YouTube Like:', data);
+                        appState.goals.youtube.likes++;
+                        updateMainGoal();
+                        showNotification(`New YouTube like!`, 'success');
+                    });
+
+                    // TikTok Events
+                    streamerbotClient.on('TikTok.Follow', (data) => {
+                        console.log('TikTok Follow:', data);
+                        appState.goals.tiktok.followers++;
+                        updateGoal('tiktok', 'followers');
+                        showNotification(`New TikTok follower!`, 'success');
+                    });
+
+                    // Kick Events
+                    streamerbotClient.on('Kick.Follow', (data) => {
+                        console.log('Kick Follow:', data);
+                        appState.goals.kick.followers++;
+                        updateGoal('kick', 'followers');
+                        showNotification(`New Kick follower!`, 'success');
+                    });
+
+                    // Custom Events (for manual testing)
+                    streamerbotClient.on('General.Custom', (data) => {
+                        console.log('Custom Event:', data);
+                        handleCustomEvent(data);
+                    });
+
+                    // Attempt connection
+                    streamerbotClient.connect();
+                    
+                } else {
+                    throw new Error('StreamerbotClient not loaded');
+                }
+                
+            } catch (error) {
+                console.log('Streamer.bot connection failed:', error.message);
+                showNotification('Could not connect to Streamer.bot - using simulation mode', 'warning');
+                startSimulation();
+            }
+        }
+
+        function handleCustomEvent(data) {
+            // Handle custom events from Streamer.bot
+            if (data.eventType) {
+                switch (data.eventType) {
+                    case 'manualFollow':
+                        if (data.platform === 'twitch') {
+                            appState.goals.twitch.followers++;
+                            updateGoal('twitch', 'followers');
+                        }
+                        break;
+                    case 'bulkUpdate':
+                        // Handle bulk updates from external APIs
+                        if (data.followers) {
+                            Object.keys(data.followers).forEach(platform => {
+                                if (appState.goals[platform]) {
+                                    appState.goals[platform].followers = data.followers[platform];
+                                    updateGoal(platform, 'followers');
+                                }
+                            });
+                        }
+                        break;
+                }
+            }
+        }
+
+        function getConnectionStatus() {
+            return connectionStatus;
+        }
+
+        // Manual event triggers for testing
+        function triggerTestEvent(platform, eventType) {
+            if (streamerbotClient && connectionStatus === 'connected') {
+                // Send test event to Streamer.bot
+                streamerbotClient.doAction('TestEvent', {
+                    platform: platform,
+                    eventType: eventType
+                });
+            } else {
+                // Simulate event locally
+                switch (eventType) {
+                    case 'follow':
+                        if (appState.goals[platform]) {
+                            appState.goals[platform].followers++;
+                            updateGoal(platform, 'followers');
+                        }
+                        break;
+                    case 'sub':
+                        if (platform === 'twitch') {
+                            appState.goals.twitch.subscribers++;
+                            updateGoal('twitch', 'subscribers');
+                        } else if (platform === 'youtube') {
+                            appState.goals.youtube.subscribers++;
+                            updateGoal('youtube', 'subscribers');
+                        }
+                        break;
+                }
+            }
+        }
+        // Simulation Functions (Fallback Mode)
+        function simulateGrowth() {
+            const platforms = ['twitch', 'youtube', 'tiktok', 'kick'];
+            const metrics = {
+                twitch: ['followers'],
+                youtube: ['subscribers'],
+                tiktok: ['followers'],
+                kick: ['followers']
+            };
+            
+            platforms.forEach(platform => {
+                metrics[platform].forEach(metric => {
+                    const increment = Math.floor(Math.random() * 5) + 1;
+                    appState.goals[platform][metric] += increment;
+                    updateGoal(platform, metric);
+                });
+            });
+            
+            showNotification('Growth simulated successfully!', 'success');
+        }
+
+        function startSimulation() {
+            // Only start simulation if not connected to Streamer.bot
+            if (connectionStatus !== 'connected') {
+                setInterval(() => {
+                    if (connectionStatus !== 'connected' && Math.random() < 0.3) {
+                        const platforms = ['twitch', 'youtube', 'tiktok', 'kick'];
+                        const platform = platforms[Math.floor(Math.random() * platforms.length)];
+                        const metrics = {
+                            twitch: ['followers'],
+                            youtube: ['subscribers'],
+                            tiktok: ['followers'],
+                            kick: ['followers']
+                        };
+                        
+                        const metric = metrics[platform][Math.floor(Math.random() * metrics[platform].length)];
+                        appState.goals[platform][metric]++;
+                        updateGoal(platform, metric);
+                    }
+                }, 5000);
+            }
+        }
+
+        function resetGoals() {
+            if (confirm('Are you sure you want to reset all progress?')) {
+                appState.goals = {
+                    twitch: { followers: 0, subscribers: 0 },
+                    youtube: { subscribers: 0, likes: 0 },
+                    tiktok: { followers: 0, likes: 0 },
+                    kick: { followers: 0 },
+                    donations: { total: 0 },
+                    viewers: { peak: 0 }
+                };
+                updateAllGoals();
+                showNotification('All goals reset successfully!', 'success');
+            }
+        }
+
+        // Settings Management (Memory-based, no localStorage)
+        function loadSettings() {
+            // Load from form fields only (no localStorage due to file:// restrictions)
+            updateFormFields();
+        }
+
+        function updateFormFields() {
+            // Update form fields with current settings
+            const mainGoalTypeEl = document.getElementById('mainGoalType');
+            const mainGoalTargetEl = document.getElementById('mainGoalTarget');
+            const twitchFollowerGoalEl = document.getElementById('twitchFollowerGoal');
+            const youtubeSubGoalEl = document.getElementById('youtubeSubGoal');
+            const tiktokFollowerGoalEl = document.getElementById('tiktokFollowerGoal');
+            const kickFollowerGoalEl = document.getElementById('kickFollowerGoal');
+
+            if (mainGoalTypeEl) mainGoalTypeEl.value = appState.settings.mainGoal.type;
+            if (mainGoalTargetEl) mainGoalTargetEl.value = appState.settings.mainGoal.target;
+            if (twitchFollowerGoalEl) twitchFollowerGoalEl.value = appState.settings.twitch.followers;
+            if (youtubeSubGoalEl) youtubeSubGoalEl.value = appState.settings.youtube.subscribers;
+            if (tiktokFollowerGoalEl) tiktokFollowerGoalEl.value = appState.settings.tiktok.followers;
+            if (kickFollowerGoalEl) kickFollowerGoalEl.value = appState.settings.kick.followers;
+        }
+
+        function reconnectStreamerBot() {
+            const serverEl = document.getElementById('streamerbotServer');
+            const portEl = document.getElementById('streamerbotPort');
+            const server = serverEl?.value || '127.0.0.1';
+            const port = portEl?.value || '8080';
+            
+            // Disconnect existing connection
+            if (streamerbotClient) {
+                streamerbotClient.disconnect();
+            }
+            
+            // Attempt new connection
+            connectStreamerBot();
+        }
+
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            const statusTextElement = document.getElementById('connectionStatusText');
+            
+            let statusHTML = '';
+            let statusText = '';
+            let color = '';
+            
+            switch(connectionStatus) {
+                case 'connected':
+                    statusHTML = '<i class="fas fa-circle" style="color: #22c55e;"></i> Connected';
+                    statusText = 'Connected to Streamer.bot';
+                    color = '#22c55e';
+                    break;
+                case 'connecting':
+                    statusHTML = '<i class="fas fa-spinner fa-spin" style="color: #f59e0b;"></i> Connecting...';
+                    statusText = 'Connecting to Streamer.bot...';
+                    color = '#f59e0b';
+                    break;
+                case 'failed':
+                    statusHTML = '<i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Failed';
+                    statusText = 'Connection failed - File protocol detected';
+                    color = '#ef4444';
+                    break;
+                case 'error':
+                    statusHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i> Error';
+                    statusText = 'Connection error - Use HTTP server';
+                    color = '#ef4444';
+                    break;
+                default:
+                    statusHTML = '<i class="fas fa-circle" style="color: #ef4444;"></i> Disconnected';
+                    statusText = 'Disconnected (using simulation)';
+                    color = '#ef4444';
+            }
+            
+            if (statusElement) {
+                statusElement.innerHTML = statusHTML;
+            }
+            if (statusTextElement) {
+                statusTextElement.textContent = statusText;
+                statusTextElement.style.color = color;
+            }
+        }
+
+        // Template System
+        function applyTemplate(templateName) {
+            const templates = {
+                newStreamer: {
+                    mainGoal: { type: 'followers', target: 50 },
+                    twitch: { followers: 10, subscribers: 5 },
+                    youtube: { subscribers: 10, likes: 25 },
+                    tiktok: { followers: 15 },
+                    kick: { followers: 10 }
+                },
+                growing: {
+                    mainGoal: { type: 'followers', target: 200 },
+                    twitch: { followers: 50, subscribers: 20 },
+                    youtube: { subscribers: 75, likes: 100 },
+                    tiktok: { followers: 50 },
+                    kick: { followers: 25 }
+                },
+                ambitious: {
+                    mainGoal: { type: 'followers', target: 500 },
+                    twitch: { followers: 150, subscribers: 50 },
+                    youtube: { subscribers: 200, likes: 300 },
+                    tiktok: { followers: 100 },
+                    kick: { followers: 50 }
+                }
+            };
+            
+            if (templates[templateName]) {
+                appState.settings = { ...appState.settings, ...templates[templateName] };
+                loadSettings();
+                updateAllGoals();
+                showNotification(`${templateName.charAt(0).toUpperCase() + templateName.slice(1)} template applied!`, 'success');
+            }
+        }
+
+        // Overlay Generator
+        function generateOverlay() {
+            const theme = document.getElementById('overlayTheme').value;
+            const position = document.getElementById('overlayPosition').value;
+            
+            const params = new URLSearchParams({
+                theme: theme,
+                position: position,
+                mainGoalType: appState.settings.mainGoal.type,
+                mainGoalTarget: appState.settings.mainGoal.target,
+                twitchGoal: appState.settings.twitch.followers,
+                youtubeGoal: appState.settings.youtube.subscribers,
+                tiktokGoal: appState.settings.tiktok.followers,
+                kickGoal: appState.settings.kick.followers
+            });
+            
+            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'overlay.html';
+            const overlayUrl = baseUrl + '?' + params.toString();
+            
+            document.getElementById('generatedUrl').textContent = overlayUrl;
+            document.getElementById('overlayUrl').style.display = 'block';
+            
+            showNotification('Overlay URL generated!', 'success');
+        }
+
+        // Profile Management
+        function showProfile() {
+            const profileHtml = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;" onclick="this.remove()">
+                    <div class="profile-card" onclick="event.stopPropagation()">
+                        <div class="profile-avatar">${appState.user.avatar}</div>
+                        <div class="profile-name">${appState.user.name}</div>
+                        <div class="profile-handle">${appState.user.handle}</div>
+                        <div style="display: flex; gap: 1rem; justify-content: center;">
+                            <button class="btn btn-secondary" onclick="editProfile()">Edit Profile</button>
+                            <button class="btn btn-primary" onclick="exportData()">Export Data</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', profileHtml);
+        }
+
+        function editProfile() {
+            const name = prompt('Enter your name:', appState.user.name);
+            if (name) {
+                appState.user.name = name;
+                appState.user.avatar = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                // No localStorage saving due to file:// restrictions
+                showNotification('Profile updated! (Note: Changes won\'t persist without HTTP server)', 'success');
+            }
+        }
+
+        function exportData() {
+            const data = {
+                goals: appState.goals,
+                settings: appState.settings,
+                user: appState.user,
+                exportDate: new Date().toISOString()
+            };
+            
+            // Create download without localStorage
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'streamgoals-data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Data exported successfully!', 'success');
+        }
+
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'times-circle'}"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
