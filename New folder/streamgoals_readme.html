@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamGoals - Professional Multi-Platform Goal Tracking</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --dark-bg: #0f0f14;
+            --card-bg: rgba(26, 26, 31, 0.95);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 3rem 0 1.5rem 0;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem 0;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem 0;
+            color: var(--text-primary);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .intro {
+            font-size: 1.3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.8;
+        }
+
+        .section {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .feature-card strong {
+            color: var(--text-primary);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--warning);
+        }
+
+        .warning-box h4 {
+            color: var(--warning);
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        .info-box {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--success);
+        }
+
+        .info-box h4 {
+            color: var(--success);
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        .step-list {
+            counter-reset: step-counter;
+            list-style: none;
+            margin-left: 0;
+            padding-left: 0;
+        }
+
+        .step-list > li,
+        .step-list > li > ul > li {
+            counter-increment: step-counter;
+            margin-bottom: 1rem;
+            padding-left: 3rem;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .step-list > li::before,
+        .step-list > li > ul > li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: var(--primary-gradient);
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .step-list > li > ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-left: -3rem;
+            margin-top: 0.75rem;
+        }
+
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .platform-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .platform-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .platform-item i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .platform-item small {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 400;
+            margin-top: 0.5rem;
+            display: block;
+        }
+
+        .troubleshooting-item, .faq-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .troubleshooting-item {
+            border-left: 4px solid var(--danger);
+        }
+
+        .faq-item {
+            border-left: 4px solid var(--success);
+        }
+
+        .troubleshooting-item strong {
+            color: var(--danger);
+            display: block;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .faq-item strong {
+            color: var(--success);
+            display: block;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .keyboard-shortcuts {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: 'Courier New', monospace;
+            backdrop-filter: blur(10px);
+        }
+
+        .keyboard-shortcuts strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        code {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+        
+        details pre {
+            white-space: pre-wrap;
+            white-space: -moz-pre-wrap;
+            white-space: -pre-wrap;
+            white-space: -o-pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .icon {
+            margin-right: 0.5rem;
+            color: #667eea;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--glass-bg);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: var(--success);
+            color: white;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .credits {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 2rem;
+        }
+
+        .footer-subtitle {
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+            }
+            
+            .features-grid,
+            .platform-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        ::selection {
+            background: rgba(102, 126, 234, 0.3);
+            color: var(--text-primary);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--glass-bg);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-chart-line icon"></i>StreamGoals</h1>
+        
+        <p class="intro">
+            StreamGoals is a professional goal tracking overlay system that unifies follower, subscriber, and donation events from <strong>Twitch</strong>, <strong>YouTube</strong>, <strong>TikTok</strong>, <strong>Kick</strong>, <strong>StreamElements</strong>, and <strong>StreamLabs</strong>. Track your streaming goals with beautiful, customizable progress bars that update in real-time!
+        </p>
+
+        <div class="section">
+            <h2><i class="fas fa-star icon"></i>What is StreamGoals?</h2>
+            <p>StreamGoals is a powerful, browser-based overlay system that tracks your streaming goals across multiple platforms in real-time. Whether you're trying to reach 100 Twitch followers, 50 YouTube subscribers, or $500 in donations, StreamGoals displays beautiful progress bars that update automatically as events happen during your stream.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-chart-line icon"></i><strong>Multi-platform goal tracking</strong>
+                    <p>Twitch, YouTube, TikTok, Kick, StreamElements, and StreamLabs all in one place</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-money-bill-wave icon"></i><strong>Smart currency conversion</strong>
+                    <p>GBP, USD, EUR with real-time exchange rates</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-palette icon"></i><strong>Fully customizable</strong>
+                    <p>Colors, fonts, progress bar styles, labels, and animations</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-link icon"></i><strong>URL-based configuration</strong>
+                    <p>Settings are stored in the URL - never lose your config again!</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-sync-alt icon"></i><strong>Auto-increment goals</strong>
+                    <p>"Moving goalpost" mode keeps momentum going</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt icon"></i><strong>Real-time updates</strong>
+                    <p>Instant progress updates via Streamer.Bot WebSocket</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-sparkles icon"></i><strong>Goal celebrations</strong>
+                    <p>Configurable starfall effects when goals are reached</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-tv icon"></i><strong>OBS ready</strong>
+                    <p>Perfect dimensions and transparency for streaming</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-grip-vertical icon"></i><strong>Drag & drop settings</strong>
+                    <p>Reorganize settings panels by dragging them around</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shapes icon"></i><strong>Smart edge styling</strong>
+                    <p>Round or square container styles with customizable leading edges</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-share icon"></i><strong>Config sharing</strong>
+                    <p>Import/export configurations via URL or JSON files</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-magic icon"></i><strong>Auto-reconnection</strong>
+                    <p>Smart reconnection with configurable retry logic</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-list-check icon"></i>Prerequisites</h2>
+            <p>Before installing StreamGoals, make sure you have the following platforms and tools set up:</p>
+
+            <div class="platform-grid">
+                <div class="platform-item">
+                    <i class="fab fa-twitch" style="color: #9146ff;"></i>
+                    <strong>Streamer.Bot</strong><br>
+                    <a href="https://streamer.bot/downloads" target="_blank" rel="noopener noreferrer">Download Streamer.Bot</a><br>
+                    <small>Required for all platform integrations</small>
+                </div>
+                <div class="platform-item">
+                    <i class="fab fa-tiktok" style="color: #ff0050;"></i>
+                    <strong>TikTok Integration</strong><br>
+                    <a href="https://tikfinity.zerody.one/app/" target="_blank" rel="noopener noreferrer">Download TikFinity Desktop App</a><br>
+                    <small>For TikTok follower tracking</small>
+                </div>
+                <div class="platform-item">
+                    <i class="fas fa-play" style="color: #53fc18;"></i>
+                    <strong>Kick Integration</strong><br>
+                    <a href="https://github.com/Sehelitar/Kick.bot/releases/" target="_blank" rel="noopener noreferrer">Download Kick.Bot</a><br>
+                    <small>For Kick follower/subscriber tracking</small>
+                </div>
+                <div class="platform-item">
+                    <i class="fas fa-donate" style="color: #00ff7f;"></i>
+                    <strong>Donation Platforms</strong><br>
+                    <a href="https://streamelements.com/" target="_blank" rel="noopener noreferrer">StreamElements</a> • <a href="https://streamlabs.com/" target="_blank" rel="noopener noreferrer">StreamLabs</a><br>
+                    <small>Connect to Streamer.Bot for donations</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-rocket icon"></i>Installation & Setup</h2>
+            <p>Make sure your <strong>Twitch</strong> and <strong>YouTube</strong> accounts are connected in <strong>Streamer.Bot</strong> before proceeding. <strong>All applications must run on the same PC</strong>.</p>
+
+            <h3><i class="fas fa-cog icon"></i>Quick Setup Overview</h3>
+            <ol class="step-list">
+                <li>Set up Streamer.Bot WebSocket Server</li>
+                <li>Import StreamGoals actions into Streamer.Bot</li>
+                <li>Configure YouTube API (for subscriber tracking)</li>
+                <li>Install optional integrations (TikTok, Kick, Donations)</li>
+                <li>Launch StreamGoals and configure your goals</li>
+                <li>Add overlay URL to OBS as Browser Source</li>
+            </ol>
+
+            <h3><i class="fas fa-server icon"></i>Streamer.Bot WebSocket Setup</h3>
+            <ol class="step-list">
+                <li>Open <strong>Streamer.Bot</strong></li>
+                <li>Go to <strong>Servers/Clients → WebSocket Server</strong></li>
+                <li>Enable the WebSocket Server and ensure it's running on port <code>8080</code></li>
+                <li>Note the IP address (usually <code>127.0.0.1</code> for local connections)</li>
+            </ol>
+
+            <h3><i class="fas fa-file-import icon"></i>Importing StreamGoals Actions</h3>
+            <p>StreamGoals requires specific actions to be imported into Streamer.Bot. These actions handle platform events and send data to StreamGoals.</p>
+            
+            <p>To add an import to your bot, follow these steps:</p>
+            <ol class="step-list">
+                <li>In <strong>Streamer.bot</strong>, open the Import Dialog by clicking <strong>Import</strong> on the top toolbar</li>
+                <li>Paste your Streamer.bot import string into the <strong>Import String</strong> input (you can also drag & drop a file containing the import code)</li>
+                <li>Review all included items and customize which items to import by <strong>Right-Clicking</strong> and toggling <strong>Include in Import</strong></li>
+                <li>Click the <strong>Import</strong> button to complete the import</li>
+            </ol>
+
+            <div class="info-box">
+                <h4><i class="fas fa-check-circle"></i> Import Successful?</h4>
+                <p>After importing, ensure that:
+                    <ul>
+                        <li>New StreamGoals actions are visible in your Streamer.Bot "Actions" tab</li>
+                        <li>No major errors were reported during the import process</li>
+                        <li>The actions are ready to work with your configured settings</li>
+                    </ul>
+                </p>
+            </div>
+
+            <h3><i class="fab fa-youtube icon" style="color: #ff0000;"></i> YouTube Data API v3 Setup</h3>
+            <p>To enable YouTube subscriber tracking, you'll need to create a YouTube API key and add it to Streamer.Bot.</p>
+            
+            <ol class="step-list">
+                <li>Go to the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">Google Cloud Console</a> and sign in</li>
+                <li>Create a new project or select an existing one</li>
+                <li>Navigate to <strong>APIs & Services → Library</strong></li>
+                <li>Search for "<strong>YouTube Data API v3</strong>" and enable it</li>
+                <li>Go to <strong>APIs & Services → Credentials</strong></li>
+                <li>Click "<strong>+ CREATE CREDENTIALS</strong>" and select "<strong>API key</strong>"</li>
+                <li><strong>Copy the API key immediately</strong> and store it securely</li>
+                <li>Restrict the API key by editing it:
+                    <ul>
+                        <li>Under "API restrictions", select "Restrict key"</li>
+                        <li>Choose "<strong>YouTube Data API v3</strong>" from the dropdown</li>
+                        <li>Click "Save"</li>
+                    </ul>
+                </li>
+                <li>In <strong>Streamer.Bot</strong>, go to <strong>Settings → Global Variables</strong></li>
+                <li>Create a new global variable:
+                    <ul>
+                        <li>Name: <code>zz_youtubeApiKey</code></li>
+                        <li>Value: Your API key from step 7</li>
+                        <li>Check "Persisted" to save the variable</li>
+                    </ul>
+                </li>
+                <li>Ensure your YouTube account is connected in <strong>Platforms → YouTube → Accounts</strong></li>
+            </ol>
+
+            <h3><i class="fas fa-plug icon"></i>TikTok Integration Setup</h3>
+            <ol class="step-list">
+                <li>Download and install <a href="https://tikfinity.zerody.one/app/" target="_blank" rel="noopener noreferrer"><strong>TikFinity Desktop App</strong></a></li>
+                <li>Open TikFinity and connect it to your TikTok account</li>
+                <li>In <strong>Streamer.Bot</strong>, go to <strong>Servers/Clients → Custom WebSocket Client</strong></li>
+                <li>Find the TikFinity WebSocket connection</li>
+                <li>Right-click and enable <strong>Auto-Connect</strong> and <strong>Reconnect</strong></li>
+                <li>Click <strong>Connect</strong> if not already connected</li>
+            </ol>
+
+            <h3><i class="fas fa-plug icon"></i>Kick.Bot Installation</h3>
+            <ol class="step-list">
+                <li>Download <a href="https://github.com/Sehelitar/Kick.bot/releases/" target="_blank" rel="noopener noreferrer"><strong>Kick.Bot</strong></a> from Sehelitar's repo</li>
+                <li>Unzip and copy the DLLs to the <strong>dlls</strong> folder inside Streamer.Bot (create the folder if it doesn't exist)</li>
+                <li>Import the action from the <strong>action.txt</strong> file included in the ZIP</li>
+                <li>Restart <strong>Streamer.Bot</strong></li>
+                <li>A login window will appear - login to your Kick account</li>
+            </ol>
+
+            <div class="warning-box">
+                <h4><i class="fas fa-exclamation-triangle"></i> Kick Integration Note</h4>
+                <p>Kick integration is beta functionality. If Kick.Bot stops working, delete the DLLs, remove the imported action, delete the <code>Streamer.bot.exe.WebView2</code> folder, and reinstall following the steps above.</p>
+            </div>
+
+            <h3><i class="fas fa-donate icon"></i>Donation Platform Setup</h3>
+            
+            <h4>StreamElements Setup</h4>
+            <ol class="step-list">
+                <li>Go to <a href="https://streamelements.com/" target="_blank" rel="noopener noreferrer">StreamElements.com</a> and login</li>
+                <li>Navigate to <strong>Account settings → Channels</strong></li>
+                <li>Find <strong>Streamer.bot</strong> in integrations and click <strong>Connect</strong></li>
+                <li>Copy the <strong>JWT Token</strong> provided</li>
+                <li>In Streamer.Bot, go to <strong>Platforms → StreamElements</strong></li>
+                <li>Paste the JWT Token and click <strong>Connect</strong></li>
+            </ol>
+
+            <h4>StreamLabs Setup</h4>
+            <ol class="step-list">
+                <li>Go to <a href="https://streamlabs.com/" target="_blank" rel="noopener noreferrer">StreamLabs.com</a> and login</li>
+                <li>Navigate to <strong>Settings → API Settings</strong></li>
+                <li>Generate or find your <strong>Socket API Token</strong></li>
+                <li>In Streamer.Bot, go to <strong>Platforms → StreamLabs</strong></li>
+                <li>Paste the Socket API Token and click <strong>Connect</strong></li>
+            </ol>
+
+            <div class="info-box">
+                <h4><i class="fas fa-lightbulb"></i> Donation Setup Notes</h4>
+                <ul>
+                    <li>Choose either StreamElements OR StreamLabs, not both</li>
+                    <li>StreamGoals supports multi-currency conversion (GBP, USD, EUR)</li>
+                    <li>Test donations using the built-in test buttons</li>
+                </ul>
+            </div>
+
+            <h3><i class="fas fa-desktop icon"></i>StreamGoals Initial Configuration</h3>
+            <ol class="step-list">
+                <li>Open StreamGoals in your web browser</li>
+                <li>On the Dashboard, connect to Streamer.Bot:
+                    <ul>
+                        <li>Enter IP address (usually <code>127.0.0.1</code>)</li>
+                        <li>Enter port (usually <code>8080</code>)</li>
+                        <li>Click <strong>Connect</strong></li>
+                    </ul>
+                </li>
+                <li>Go to <strong>Settings</strong> and configure:
+                    <ul>
+                        <li>Set your goal targets for each platform</li>
+                        <li>Enter current follower/subscriber counts</li>
+                        <li>Choose colors and labels for each goal</li>
+                        <li>Configure overlay dimensions and appearance</li>
+                    </ul>
+                </li>
+                <li>Go to the <strong>Overlay</strong> tab and copy the generated URL</li>
+                <li>In OBS, add a new <strong>Browser Source</strong>:
+                    <ul>
+                        <li>Paste the overlay URL</li>
+                        <li>Set width and height to match your settings</li>
+                        <li>Uncheck "Shutdown source when not visible"</li>
+                        <li>Check "Refresh browser when scene becomes active"</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-chart-bar icon"></i>Features & Functionality</h2>
+
+            <h3><i class="fas fa-trophy icon"></i>Supported Goal Types</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Platform</th>
+                            <th>Followers</th>
+                            <th>Subscribers</th>
+                            <th>Donations</th>
+                            <th>Bits/Cheers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong><i class="fab fa-twitch"></i> Twitch</strong></td>
+                            <td><span class="badge">✅</span></td>
+                            <td><span class="badge">✅</span></td>
+                            <td>-</td>
+                            <td><span class="badge">✅</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong><i class="fab fa-youtube"></i> YouTube</strong></td>
+                            <td>-</td>
+                            <td><span class="badge">✅</span></td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><strong><i class="fab fa-tiktok"></i> TikTok</strong></td>
+                            <td><span class="badge">✅</span></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><strong><i class="fas fa-play"></i> Kick</strong></td>
+                            <td><span class="badge">✅</span></td>
+                            <td><span class="badge">✅</span></td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><strong><i class="fas fa-donate"></i> StreamElements</strong></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td><span class="badge">✅</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><strong><i class="fas fa-donate"></i> StreamLabs</strong></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td><span class="badge">✅</span></td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3><i class="fas fa-plus-circle icon"></i>Main Goal Combinations</h3>
+            <p>Create powerful combined goals that track across multiple platforms:</p>
+            <div class="platform-grid">
+                <div class="platform-item">
+                    <i class="fas fa-users" style="color: #667eea;"></i>
+                    <strong>Total Followers</strong><br>
+                    Twitch + TikTok + Kick followers combined
+                </div>
+                <div class="platform-item">
+                    <i class="fas fa-star" style="color: #667eea;"></i>
+                    <strong>Total Subscribers</strong><br>
+                    Twitch + YouTube + Kick subscribers combined
+                </div>
+                <div class="platform-item">
+                    <i class="fas fa-donate" style="color: #667eea;"></i>
+                    <strong>Total Donations</strong><br>
+                    All StreamElements/StreamLabs donations
+                </div>
+                <div class="platform-item">
+                    <i class="fas fa-gem" style="color: #667eea;"></i>
+                    <strong>Total Bits</strong><br>
+                    All Twitch bit/cheer events
+                </div>
+            </div>
+
+            <h3><i class="fas fa-magic icon"></i>Smart Features</h3>
+            
+            <h4><i class="fas fa-sync-alt icon"></i> Auto-Increment Goals (Moving Goalpost)</h4>
+            <p>Enable per-goal to automatically increase targets when reached:</p>
+            <ul>
+                <li><strong>Follower/Subscriber goals</strong>: Increment by +1 when achieved</li>
+                <li><strong>Donation goals</strong>: Increment by +5 currency units</li>
+                <li><strong>Bit goals</strong>: Choose +100, +500, or +1000 increment amount</li>
+                <li><strong>Momentum building</strong>: Keeps goals challenging during successful streams</li>
+                <li><strong>Celebrations</strong>: Shows notifications when goals are reached</li>
+            </ul>
+
+            <h4><i class="fas fa-exchange-alt icon"></i> Multi-Currency Donations</h4>
+            <ul>
+                <li><strong>Set preferred currency</strong>: Choose GBP, USD, or EUR</li>
+                <li><strong>Auto-conversion</strong>: Donations in any currency are converted automatically</li>
+                <li><strong>Real-time rates</strong>: Exchange rates update automatically</li>
+                <li><strong>Conversion display</strong>: Shows original amount and converted amount in notifications</li>
+            </ul>
+
+            <h4><i class="fas fa-link icon"></i> URL-Based Configuration</h4>
+            <p>All your settings are stored in the URL for maximum convenience:</p>
+            <ul>
+                <li><strong>Never lose settings</strong>: Configuration is preserved in the URL</li>
+                <li><strong>Easy sharing</strong>: Share complete setups with other streamers</li>
+                <li><strong>Multiple configurations</strong>: Create different overlay setups for different scenes</li>
+                <li><strong>OBS-ready</strong>: Paste URL directly into Browser Source</li>
+                <li><strong>Backup-free</strong>: Just bookmark your overlay URL</li>
+            </ul>
+
+            <h4><i class="fas fa-palette icon"></i> Visual Customization</h4>
+            <ul>
+                <li><strong>Custom colors</strong>: Individual colors for each goal type</li>
+                <li><strong>Font controls</strong>: Choose from system fonts or enter custom Google Fonts</li>
+                <li><strong>Font scaling</strong>: 50% to 300% size adjustment</li>
+                <li><strong>Smart edge styling</strong>: Round or square containers with customizable leading edges</li>
+                <li><strong>Starfall effects</strong>: Configurable celebration animations when goals complete</li>
+                <li><strong>Custom labels</strong>: Rename any goal to match your brand</li>
+            </ul>
+
+            <h4><i class="fas fa-grip-vertical icon"></i> Advanced Interface</h4>
+            <ul>
+                <li><strong>Drag & drop panels</strong>: Reorganize settings by dragging</li>
+                <li><strong>Panel locking</strong>: Lock arrangement to prevent accidental changes</li>
+                <li><strong>Live preview</strong>: See edge style changes in real-time</li>
+                <li><strong>Import/Export</strong>: Share configurations via JSON files</li>
+                <li><strong>Connection management</strong>: Auto-reconnect with configurable retry logic</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-gamepad icon"></i>Using StreamGoals</h2>
+
+            <h3><i class="fas fa-desktop icon"></i>Dashboard Controls</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <strong>Connection Controls</strong>
+                    <ul>
+                        <li><strong>Connect/Disconnect</strong>: Toggle Streamer.Bot connection</li>
+                        <li><strong>Test Connection</strong>: Verify WebSocket setup</li>
+                        <li><strong>Auto-reconnect</strong>: Configure automatic reconnection</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <strong>Testing Controls</strong>
+                    <ul>
+                        <li><strong>Simulate Growth</strong>: Add random progress across platforms</li>
+                        <li><strong>Reset Goals</strong>: Clear all progress back to 0</li>
+                        <li><strong>Platform Tests</strong>: Individual test buttons for each platform</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <strong>Quick Setup</strong>
+                    <ul>
+                        <li><strong>Reset to 0</strong>: Set all current progress to 0</li>
+                        <li><strong>50% of Goals</strong>: Set progress to half of target values</li>
+                        <li><strong>Color controls</strong>: Reset to defaults or randomize</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3><i class="fas fa-tv icon"></i>Overlay Controls</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <strong>Playback Controls</strong>
+                    <ul>
+                        <li><strong>Play/Pause</strong>: Control goal rotation</li>
+                        <li><strong>Next Goal</strong>: Manually advance to next goal</li>
+                        <li><strong>Duration</strong>: Set how long each goal displays</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <strong>Configuration</strong>
+                    <ul>
+                        <li><strong>Goal Order</strong>: Drag goals to reorder display sequence</li>
+                        <li><strong>Enable/Disable</strong>: Turn individual goals on/off</li>
+                        <li><strong>Dimensions</strong>: Set overlay width and height for OBS</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <strong>OBS Integration</strong>
+                    <ul>
+                        <li><strong>Copy URL</strong>: Get overlay URL for Browser Source</li>
+                        <li><strong>Preview</strong>: Test overlay in separate window</li>
+                        <li><strong>Dimensions display</strong>: Shows exact OBS settings needed</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3><i class="fas fa-keyboard icon"></i>Keyboard Shortcuts (Overlay Mode)</h3>
+            <div class="keyboard-shortcuts">
+                <strong>Ctrl+T</strong>: Test increment (+1 Twitch follower)<br>
+                <strong>Ctrl+R</strong>: Refresh overlay<br>
+                <strong>Ctrl+U</strong>: Show current URL in console<br>
+                <strong>Ctrl+C</strong>: Check connection status<br>
+                <strong>Ctrl+D</strong>: Toggle debug info display
+            </div>
+
+            <h3><i class="fas fa-cog icon"></i>Settings Organization</h3>
+            <p>Settings are organized into draggable panels that you can rearrange:</p>
+            <ul>
+                <li><strong>Current Progress & Main Goal</strong>: Set starting values and main goal type</li>
+                <li><strong>Twitch Goals</strong>: Configure Twitch followers, subscribers, and bits</li>
+                <li><strong>Multi-Platform Goals</strong>: YouTube, TikTok, and Kick settings</li>
+                <li><strong>Donation Goals</strong>: Currency and donation amount targets</li>
+                <li><strong>Overlay Settings</strong>: Display duration, dimensions, and goal order</li>
+                <li><strong>Visual Customization</strong>: Colors, fonts, edge styles, and effects</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-wrench icon"></i>Troubleshooting</h2>
+
+            <h3><i class="fas fa-wifi icon"></i>Connection Issues</h3>
+            <div class="troubleshooting-item">
+                <strong><i class="fas fa-times-circle"></i> YouTube subscribers not updating</strong>
+                <ul>
+                    <li>Verify YouTube Data API v3 is enabled in Google Cloud Console</li>
+                    <li>Check that <code>zz_youtubeApiKey</code> global variable is set correctly</li>
+                    <li>Ensure YouTube account is connected in Streamer.Bot</li>
+                    <li>Check API quota usage in Google Cloud Console</li>
+                    <li>Verify the imported StreamGoals actions are working</li>
+                </ul>
+            </div>
+
+            <h3><i class="fas fa-mobile-alt icon"></i>Platform-Specific Issues</h3>
+            <div class="troubleshooting-item">
+                <strong><i class="fas fa-times-circle"></i> TikTok events not working</strong>
+                <ul>
+                    <li>Ensure TikFinity Desktop App is running and connected</li>
+                    <li>Check TikFinity WebSocket connection in Streamer.Bot</li>
+                    <li>Verify TikTok account is properly logged in to TikFinity</li>
+                    <li>Try disconnecting and reconnecting TikFinity WebSocket</li>
+                </ul>
+            </div>
+
+            <div class="troubleshooting-item">
+                <strong><i class="fas fa-times-circle"></i> Kick events not working</strong>
+                <ul>
+                    <li>Ensure Kick.Bot DLLs are in the correct dlls folder</li>
+                    <li>Verify Kick account login was successful</li>
+                    <li>Check that Kick.Bot action was imported correctly</li>
+                    <li>Try reinstalling Kick.Bot if events stop working</li>
+                    <li>Set Kick channel name in StreamGoals settings</li>
+                </ul>
+            </div>
+
+            <div class="troubleshooting-item">
+                <strong><i class="fas fa-times-circle"></i> Donations not tracking</strong>
+                <ul>
+                    <li>Verify StreamElements or StreamLabs is connected to Streamer.Bot</li>
+                    <li>Check that donation platform integration is active</li>
+                    <li>Test with small donation to verify connection</li>
+                    <li>Ensure currency settings match your preferred currency</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-question-circle icon"></i>Frequently Asked Questions</h2>
+
+            <div class="faq-item">
+                <strong><i class="fas fa-question"></i> Q: What platforms does StreamGoals support?</strong>
+                <p>A: StreamGoals supports Twitch, YouTube, TikTok, and Kick for follower/subscriber tracking, plus StreamElements and StreamLabs for donations.</p>
+            </div>
+
+            <div class="faq-item">
+                <strong><i class="fas fa-question"></i> Q: How do I backup my StreamGoals configuration?</strong>
+                <p>A: Your settings are automatically saved in the overlay URL! Just bookmark it or use the Export JSON feature. The URL contains all your goals, settings, colors, and preferences.</p>
+            </div>
+
+            <div class="faq-item">
+                <strong><i class="fas fa-question"></i> Q: Can I use custom fonts from Google Fonts?</strong>
+                <p>A: Yes! Select "Custom Font Name" and enter any Google Fonts family name (like "Roboto" or "Open Sans"). Make sure the font is available on the system running OBS.</p>
+            </div>
+
+            <div class="faq-item">
+                <strong><i class="fas fa-question"></i> Q: How accurate are the currency conversions?</strong>
+                <p>A: StreamGoals fetches real-time exchange rates from a reliable API and updates them automatically. Rates are typically accurate within a few hours of market changes.</p>
+            </div>
+
+            <div class="faq-item">
+                <strong><i class="fas fa-question"></i> Q: Can I create different overlay configurations for different scenes?</strong>
+                <p>A: Yes! Configure your overlay settings, copy the URL, and bookmark it with a descriptive name. You can create multiple configurations (like "Twitch Only" or "All Goals") and each gets its own unique URL.</p>
+            </div>
+
+            <div class="faq-item">
+                <strong><i class="fas fa-question"></i> Q: What's the difference between "Auto-Increment" and regular goals?</strong>
+                <p>A: Auto-increment goals automatically increase their target when reached (like a "moving goalpost"). Regular goals stay at the same target. This keeps momentum going during successful streams.</p>
+            </div>
+
+            <div class="faq-item">
+                <strong><i class="fas fa-question"></i> Q: Why do some goals show current progress higher than the target?</strong>
+                <p>A: This happens when you've exceeded your goal target. The progress bar will show 100% complete, but the current value continues to increase. Consider using auto-increment goals to automatically raise targets when achieved.</p>
+            </div>
+
+            <div class="faq-item">
+                <strong><i class="fas fa-question"></i> Q: Can I hide certain goals from the overlay?</strong>
+                <p>A: Yes! In Settings → Overlay Settings, you can disable any goal by unchecking "Show on Overlay". Only enabled goals will appear in the overlay rotation.</p>
+            </div>
+
+            <div class="faq-item">
+                <strong><i class="fas fa-question"></i> Q: How do I test if everything is working before going live?</strong>
+                <p>A: Use the test buttons on the Dashboard: "Test +1 Twitch Follow", "Test +$10 USD", etc. These simulate real events so you can verify the overlay updates correctly.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-lightbulb icon"></i>Tips & Best Practices</h2>
+
+            <h3><i class="fas fa-rocket icon"></i>Getting Started</h3>
+            <ul>
+                <li><strong>Start simple</strong>: Begin with just Twitch goals, then add other platforms</li>
+                <li><strong>Test everything</strong>: Use simulation buttons before going live</li>
+                <li><strong>Set realistic goals</strong>: Make targets achievable but challenging</li>
+                <li><strong>Use starting values</strong>: Set current progress to avoid starting from 0</li>
+            </ul>
+
+            <h3><i class="fas fa-paint-brush icon"></i>Customization Tips</h3>
+            <ul>
+                <li><strong>Match your brand</strong>: Use colors that complement your overlay design</li>
+                <li><strong>Choose readable fonts</strong>: Ensure text is visible against your background</li>
+                <li><strong>Test different sizes</strong>: Adjust overlay dimensions to fit your layout</li>
+                <li><strong>Use edge styles</strong>: Round edges for modern look, square for retro/gaming aesthetic</li>
+            </ul>
+
+            <h3><i class="fas fa-chart-line icon"></i>Goal Strategy</h3>
+            <ul>
+                <li><strong>Enable auto-increment</strong>: Keep goals challenging during successful streams</li>
+                <li><strong>Mix goal types</strong>: Combine followers, subs, and donations for variety</li>
+                <li><strong>Adjust display duration</strong>: Longer for complex goals, shorter for quick updates</li>
+                <li><strong>Use main goals</strong>: Set a "Total Followers" main goal for big picture progress</li>
+            </ul>
+
+            <h3><i class="fas fa-tv icon"></i>OBS Integration</h3>
+            <ul>
+                <li><strong>Disable "Shutdown source when not visible"</strong>: Keeps WebSocket connection alive</li>
+                <li><strong>Enable "Refresh browser when scene becomes active"</strong>: Ensures fresh display</li>
+                <li><strong>Set exact dimensions</strong>: Use the width/height shown in StreamGoals</li>
+                <li><strong>Position carefully</strong>: Place where it won't block important content</li>
+            </ul>
+
+            <h3><i class="fas fa-cogs icon"></i>Performance & Reliability</h3>
+            <ul>
+                <li><strong>Keep Streamer.Bot running</strong>: Close only during maintenance</li>
+                <li><strong>Monitor connections</strong>: Check connection status indicators regularly</li>
+                <li><strong>Update exchange rates</strong>: Click "Update Exchange Rate" periodically</li>
+                <li><strong>Backup configurations</strong>: Export JSON files for important setups</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-code icon"></i>Advanced Configuration</h2>
+
+            <h3><i class="fas fa-file-code icon"></i>Configuration Management</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <strong>URL-Based Storage</strong>
+                    <ul>
+                        <li>All settings compressed in URL parameters</li>
+                        <li>Automatic saving on every change</li>
+                        <li>No local storage dependencies</li>
+                        <li>Share-friendly configuration format</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <strong>Import/Export Options</strong>
+                    <ul>
+                        <li>Export JSON: Save full configuration to file</li>
+                        <li>Import JSON: Load configuration from file</li>
+                        <li>Share Config: Generate shareable URL</li>
+                        <li>Import URL: Load configuration from URL</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <strong>Multiple Configurations</strong>
+                    <ul>
+                        <li>Create different setups for different streams</li>
+                        <li>Bookmark unique URLs for each configuration</li>
+                        <li>Platform-specific overlays (Twitch-only, etc.)</li>
+                        <li>Scene-specific goal combinations</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3><i class="fas fa-network-wired icon"></i>Connection Management</h3>
+            <ul>
+                <li><strong>Auto-reconnection</strong>: Configurable retry logic with exponential backoff</li>
+                <li><strong>Connection monitoring</strong>: Real-time status indicators</li>
+                <li><strong>Multi-endpoint testing</strong>: Automatically tries different WebSocket paths</li>
+                <li><strong>Graceful degradation</strong>: Overlay continues working if connection drops temporarily</li>
+            </ul>
+
+            <h3><i class="fas fa-palette icon"></i>Visual Customization</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Options</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Edge Styles</strong></td>
+                            <td>Round/Square containers + Round/Square leading edges</td>
+                            <td>Match your overlay aesthetic</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Font Control</strong></td>
+                            <td>System fonts + Custom Google Fonts + Size scaling (50-300%)</td>
+                            <td>Brand consistency</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Color System</strong></td>
+                            <td>Individual goal colors + Preset collections + Random generation</td>
+                            <td>Visual organization</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Starfall Effects</strong></td>
+                            <td>Configurable count, colors, duration + Enable/disable per goal</td>
+                            <td>Goal celebrations</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-bug icon"></i>Debug Features</h2>
+
+            <h3><i class="fas fa-terminal icon"></i>Built-in Debugging</h3>
+            <p>StreamGoals includes comprehensive debugging tools accessible from the Debug tab:</p>
+            <ul>
+                <li><strong>Real-time message log</strong>: See all WebSocket messages from Streamer.Bot</li>
+                <li><strong>Connection diagnostics</strong>: Test different connection endpoints</li>
+                <li><strong>Platform-specific debugging</strong>: Individual debug functions for each platform</li>
+                <li><strong>URL analysis</strong>: Inspect configuration data and URL length</li>
+                <li><strong>Currency conversion testing</strong>: Verify exchange rate calculations</li>
+            </ul>
+
+            <h3><i class="fas fa-keyboard icon"></i>Debug Commands</h3>
+            <div class="keyboard-shortcuts">
+                <strong>debugYouTubeEvents()</strong>: Check YouTube integration status<br>
+                <strong>debugKickIntegration()</strong>: Verify Kick connection and settings<br>
+                <strong>debugUrlLength()</strong>: Check URL size and compression efficiency<br>
+                <strong>testCurrencyConversion()</strong>: Verify donation currency calculations<br>
+                <strong>debugTwitchGiftedSubs()</strong>: Test Twitch gifted sub handling
+            </div>
+
+            <h3><i class="fas fa-eye icon"></i>Overlay-Only Debug Mode</h3>
+            <p>When using the overlay URL in OBS, debug information is available:</p>
+            <ul>
+                <li><strong>Ctrl+D</strong>: Toggle debug info display</li>
+                <li><strong>Debug panel shows</strong>: Connection status, data source, current goals</li>
+                <li><strong>Console logging</strong>: All events and connection changes</li>
+                <li><strong>Keyboard shortcuts</strong>: Test functions work in overlay mode</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-exclamation-triangle icon"></i>Known Issues & Limitations</h2>
+
+            <div class="warning-box">
+                <h4><i class="fas fa-exclamation-triangle"></i> Kick Integration (Beta)</h4>
+                <p>Kick doesn't offer an official API like Twitch. The Kick.Bot integration is excellent but has limitations:</p>
+                <ul>
+                    <li>Missing some payload information (avatars, badges, viewership)</li>
+                    <li>Occasional connection issues requiring reinstallation</li>
+                    <li>Beta functionality that may need troubleshooting</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h4><i class="fas fa-exclamation-triangle"></i> URL Length Limitations</h4>
+                <p>Settings are stored in URLs, which have browser-specific length limits:</p>
+                <ul>
+                    <li>Most browsers support URLs up to 2000+ characters</li>
+                    <li>Very complex configurations may approach this limit</li>
+                    <li>Use JSON export/import for very large configurations</li>
+                    <li>Configuration compression reduces URL size significantly</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h4><i class="fas fa-info-circle"></i> Performance Notes</h4>
+                <ul>
+                    <li><strong>WebSocket connections</strong>: Keep Streamer.Bot running for real-time updates</li>
+                    <li><strong>Browser performance</strong>: OBS Browser Sources are lightweight</li>
+                    <li><strong>Memory usage</strong>: Configuration stored in memory, not localStorage</li>
+                    <li><strong>Update frequency</strong>: Events processed in real-time as they occur</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="credits">
+            <h2><i class="fas fa-star icon"></i>Credits & Acknowledgments</h2>
+            <p><strong>StreamGoals</strong> was heavily inspired by the incredible <strong>ChatRD</strong> by <strong>VortisRD</strong>. Many of the Streamer.Bot integration methods, platform handling, and setup procedures were learned from studying ChatRD's implementation.</p>
+            
+            <p><strong>Special Thanks:</strong></p>
+            <ul style="text-align: left; margin: 2rem 0;">
+                <li><strong>VortisRD</strong> - Creator of ChatRD, inspiration and technical guidance</li>
+                <li><strong>Streamer.Bot Team</strong> - For creating the automation platform that makes this possible</li>
+                <li><strong>Sehelitar</strong> - Creator of Kick.Bot for Kick platform integration</li>
+                <li><strong>ZeroDy</strong> - Creator of TikFinity for TikTok integration</li>
+                <li><strong>StreamGoals Community</strong> - Testers, contributors, and feedback providers</li>
+            </ul>
+
+            <p><strong>Community Contributors:</strong></p>
+            <div class="platform-grid" style="margin: 1.5rem 0;">
+                <div class="platform-item">
+                    <strong>VRFlad</strong><br>
+                    <small>OBS integration testing</small>
+                </div>
+                <div class="platform-item">
+                    <strong>MamiAlex</strong><br>
+                    <small>Kick subscription testing</small>
+                </div>
+                <div class="platform-item">
+                    <strong>Kaaiiaryn</strong><br>
+                    <small>Twitch bits testing</small>
+                </div>
+                <div class="platform-item">
+                    <strong>Initiis_Novum</strong><br>
+                    <small>Gifted subs testing</small>
+                </div>
+                <div class="platform-item">
+                    <strong>StumblingPanda</strong><br>
+                    <small>AI integration help</small>
+                </div>
+                <div class="platform-item">
+                    <strong>Mattyyk937</strong><br>
+                    <small>TikTok follows testing</small>
+                </div>
+            </div>
+
+            <div class="footer-text">
+                <i class="fas fa-heart" style="color: #ff6b6b; margin: 0 0.5rem;"></i>
+                Made with passion for the streaming community
+            </div>
+            <div class="footer-subtitle">
+                Inspired by ChatRD • Powered by Streamer.Bot • Designed for streamers, by streamers
+            </div>
+
+            <p style="margin-top: 2rem; color: var(--text-secondary);">
+                <strong>Project Links:</strong><br>
+                <a href="https://github.com/vortisrd/chatrd" target="_blank" rel="noopener noreferrer">ChatRD on GitHub</a> • 
+                <a href="https://streamer.bot" target="_blank" rel="noopener noreferrer">Streamer.Bot</a> • 
+                <a href="https://github.com/Sehelitar/Kick.bot" target="_blank" rel="noopener noreferrer">Kick.Bot</a> • 
+                <a href="https://tikfinity.zerody.one" target="_blank" rel="noopener noreferrer">TikFinity</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>eshooting-item">
+                <strong><i class="fas fa-times-circle"></i> Can't connect to Streamer.Bot</strong>
+                <ul>
+                    <li>Verify Streamer.Bot WebSocket Server is running on port 8080</li>
+                    <li>Check IP address (127.0.0.1 for local, PC IP for remote)</li>
+                    <li>Ensure firewall isn't blocking the connection</li>
+                    <li>Use "Test Connection" button to diagnose issues</li>
+                    <li>Check that no other application is using port 8080</li>
+                </ul>
+            </div>
+
+            <div class="troubleshooting-item">
+                <strong><i class="fas fa-times-circle"></i> Events not updating goals</strong>
+                <ul>
+                    <li>Verify platform accounts are connected in Streamer.Bot</li>
+                    <li>Check StreamGoals actions were imported correctly</li>
+                    <li>Ensure TikFinity is running and connected (for TikTok)</li>
+                    <li>Verify Kick.Bot is installed and working (for Kick)</li>
+                    <li>Confirm donation platforms are connected to Streamer.Bot</li>
+                    <li>Test with simulation buttons first</li>
+                </ul>
+            </div>
+
+            <h3><i class="fas fa-tv icon"></i>Overlay Issues</h3>
+            <div class="troubleshooting-item">
+                <strong><i class="fas fa-times-circle"></i> Overlay not showing in OBS</strong>
+                <ul>
+                    <li>Check Browser Source dimensions match overlay settings</li>
+                    <li>Verify overlay URL contains your settings data</li>
+                    <li>Enable "Refresh browser when scene becomes active"</li>
+                    <li>Disable "Shutdown source when not visible"</li>
+                    <li>Ensure overlay is "Playing" (not paused/stopped)</li>
+                    <li>Try refreshing the Browser Source</li>
+                </ul>
+            </div>
+
+            <div class="troubl
