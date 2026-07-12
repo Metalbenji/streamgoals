@@ -755,7 +755,7 @@
         .form-control {
             width: 100%;
             padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: #1b1b20; /* The lighter of the two darks, consistent with autofill */
             border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-primary);
@@ -763,9 +763,9 @@
             transition: all 0.3s ease;
         }
 
-        .form-control select,
+        /* Style for dropdowns to ensure they are readable on a dark background */
         select.form-control,
-        .form-control option {
+        select.form-control option {
             color: #000000 !important;
             background: rgba(255, 255, 255, 0.95) !important;
         }
@@ -775,6 +775,51 @@
             border-color: rgba(102, 126, 234, 0.5);
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
+
+        /* Override browser autofill styles which often force a white background */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #1b1b20 inset !important;
+            -webkit-text-fill-color: var(--text-primary) !important;
+            /* A long transition can help delay the browser's style override */
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        /* Glossy Connection Light Styles */
+        .connection-indicator-light {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            position: relative;
+            vertical-align: middle;
+            background-image: linear-gradient(hsla(0, 0%, 100%, 0.5), hsla(0, 0%, 100%, 0) 50%, hsla(0, 0%, 0%, 0.2) 50%, hsla(0, 0%, 100%, 0.1));
+            box-shadow: inset 0 1px 2px hsla(0, 0%, 0%, 0.4), inset 0 -1px 2px hsla(0, 0%, 100%, 0.3), 0 1px 2px hsla(0, 0%, 0%, 0.5);
+            transition: background-color 0.3s ease;
+        }
+
+        .connection-indicator-light:before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            top: 1px;
+            height: 5px;
+            border-radius: 5px;
+            background: linear-gradient(hsla(0, 0%, 100%, 0.7), hsla(0, 0%, 100%, 0));
+        }
+
+        .connection-indicator-light.connected { background-color: var(--success); }
+        .connection-indicator-light.disconnected { background-color: var(--danger); }
+        .connection-indicator-light.connecting {
+            background-color: var(--warning);
+            animation: pulse-light 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-light { 50% { opacity: 0.6; } }
 
         .notification {
             position: fixed;
@@ -1369,6 +1414,60 @@
             pointer-events: none;
             opacity: 0.7;
         }
+
+        /* ChatRD Toggle Switch Styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .switch input[type=checkbox] {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #4b5563;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .switch .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .switch input[type=checkbox]:checked+.slider {
+            background-color: #DBB048;
+            /* Default gold color */
+        }
+
+        .switch input[type=checkbox]:checked+.slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Platform-specific colors */
+        .switch.twitch input[type=checkbox]:checked+.slider { background-color: #a970ff; }
+        .switch.youtube input[type=checkbox]:checked+.slider { background-color: #FF0000; }
+        .switch.tiktok input[type=checkbox]:checked+.slider { background-color: #ff0050; }
+        .switch.kick input[type=checkbox]:checked+.slider { background-color: #48d415; }
     </style>
 </head>
 
@@ -1423,71 +1522,160 @@
                 <div class="goal-overview-header">
                     <h2 class="goal-overview-title">Connection & Controls</h2>
                     <span style="color: var(--text-secondary); font-size: 0.9rem;" id="connectionStatus">
-                        <i class="fas fa-circle" style="color: #ef4444;"></i>
-                        Disconnected
-                    </span>
-                </div>
-
-                <div
-                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-                    <div>
-                        <label
-                            style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500; color: var(--text-secondary);">Server
-                            IP</label>
-                        <input type="text" id="streamerbotServer" class="form-control" value="127.0.0.1"
-                            style="margin-bottom: 0;">
-                    </div>
-                    <div>
-                        <label
-                            style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500; color: var(--text-secondary);">WebSocket
-                            Port</label>
-                        <input type="text" id="streamerbotPort" class="form-control" value="8080"
-                            style="margin-bottom: 0;">
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-                    <button type="button" class="btn btn-primary" id="connectBtn" onclick="toggleConnection()">
+                </span>            </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 0.5rem; margin-bottom: 1.5rem;">
+        
+        <!-- Column 1: Connection Settings -->
+        <div>
+            <h4 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Streamer.bot Connection Settings</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Server IP</label>
+                    <input type="text" id="streamerbotServer" class="form-control" value="127.0.0.1" oninput="saveSettings(false)">
+                    <button type="button" class="btn btn-secondary" id="connectBtn" onclick="toggleConnection()" style="width: 100%; margin-top: 0.5rem;">
                         <i class="fas fa-plug"></i>
                         Connect
                     </button>
-                    <button type="button" class="btn btn-secondary" onclick="testConnection()">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>WebSocket Port</label>
+                    <input type="text" id="streamerbotPort" class="form-control" value="8080" oninput="saveSettings(false)">
+                    <button type="button" class="btn btn-secondary" onclick="testConnection()" style="width: 100%; margin-top: 0.5rem;">
                         <i class="fas fa-network-wired"></i>
                         Test Connection
                     </button>
-                    <button class="btn btn-primary" onclick="simulateGrowth()">
-                        <i class="fas fa-chart-line"></i>
-                        Simulate Growth
-                    </button>
-                    <button class="btn btn-secondary" onclick="resetGoals()">
-                        <i class="fas fa-refresh"></i>
-                        Reset Goals
-                    </button>
-                    <button class="btn btn-warning" onclick="testGoalIncrement('twitch', 'followers', 1)">
-                        <i class="fas fa-flask"></i>
-                        Test +1 Follower
-                    </button>
-                    <button class="btn btn-warning" onclick="testGbpDonation(10)">
-                        <i class="fas fa-pound-sign"></i>
-                        Test +£10 Donation
-                    </button>
-
-                    <button class="btn btn-warning" onclick="testUsdDonation(10)">
-                        <i class="fas fa-dollar-sign"></i>
-                        Test +$10 USD
-                    </button>
-
-                    <button class="btn btn-warning" onclick="testEurDonation(10)">
-                        <i class="fas fa-euro-sign"></i>
-                        Test +€10 EUR
-                    </button>
-
-                    <div style="margin-left: auto;">
-                        <strong style="color: var(--text-secondary);">Status:</strong>
-                        <span id="connectionStatusText" style="color: #ef4444;">Disconnected</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label style="margin-bottom: 0;">Connection Status</label>
+                    <div id="sbConnectionStatus" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                        <span id="sbConnectionLight" class="connection-indicator-light disconnected"></span>
+                        <span id="sbConnectionText">Disconnected</span>
                     </div>
                 </div>
             </div>
+            <div class="form-group">
+                <label>Auto-Reconnect</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label class="switch">
+                        <input type="checkbox" id="autoReconnectEnabled" checked onchange="saveSettings(false)">
+                        <span class="slider"></span>
+                    </label>
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Automatically reconnect when connection is lost</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Max Reconnection Attempts</label>
+                <input type="number" id="maxReconnectAttempts" class="form-control" value="10" min="1" oninput="saveSettings(false)" max="50">
+                <small style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
+                    💡 How many times to try reconnecting before giving up
+                </small>
+            </div>
+            <div class="form-group">
+                <label>Initial Reconnect Delay (seconds)</label>
+                <input type="number" id="reconnectDelay" class="form-control" value="3" min="1" max="30" oninput="saveSettings(false)">
+                <small style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
+                    💡 Delay increases with each failed attempt (exponential backoff)
+                </small>
+            </div>
+        </div>
+
+        <!-- Column 2: Kick Settings -->
+        <div>
+            <h4 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">🎮 Kick Platform Settings</h4>
+            <div class="form-group">
+                <label>Kick Channel Name</label>
+                <input type="text" id="kickChannelName" class="form-control" placeholder="your-kick-username" oninput="saveSettings(false)" maxlength="50">
+                <small style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; display: block;">
+                    💡 Enter your Kick.com username (the part after kick.com/)
+                </small>
+            </div>
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label class="switch kick">
+                        <input type="checkbox" id="kickPlatformEnabled" onchange="saveSettings(false)">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Enable Kick Integration</span>
+                </label>
+                <small style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.25rem; display: block;">
+                    Receive Kick follows, subscriptions, and other events
+                </small>
+            </div>
+            <div class="form-group">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label style="margin-bottom: 0;">Connection Status</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);">
+                        <span class="connection-indicator-light disconnected" id="kickConnectionStatus"></span>
+                        <span id="kickConnectionText">Configure channel name and connect to Streamer.bot</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End of the grid -->
+
+    <!-- Testing & Simulation Buttons -->
+    <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+        <h4 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">🧪 Testing & Simulation</h4>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+            <!-- General Buttons -->
+            <button class="btn btn-secondary" onclick="simulateGrowth()">
+                <i class="fas fa-chart-line"></i>
+                Simulate Growth
+            </button>
+            <button class="btn btn-secondary" onclick="resetGoals()">
+                <i class="fas fa-refresh"></i>
+                Reset Goals
+            </button>
+            <!-- Test Buttons -->
+            <button class="btn btn-secondary" onclick="testGoalIncrement('twitch', 'followers', 1)">
+                <i class="fab fa-twitch"></i>
+                Test +1 Twitch Follow
+            </button>
+            <button class="btn btn-secondary" onclick="testGoalIncrement('twitch', 'subscribers', 1)">
+                <i class="fas fa-star"></i>
+                Test +1 Twitch Sub
+            </button>
+            <button class="btn btn-secondary" onclick="testYouTubeSub()">
+                <i class="fab fa-youtube"></i>
+                Test +1 YouTube Sub
+            </button>
+            <button class="btn btn-secondary" onclick="testGbpDonation(10)">
+                <i class="fas fa-pound-sign"></i>
+                Test +£10 Donation
+            </button>
+            <button class="btn btn-secondary" onclick="testUsdDonation(10)">
+                <i class="fas fa-dollar-sign"></i>
+                Test +$10 USD
+            </button>
+            <button class="btn btn-secondary" onclick="testEurDonation(10)">
+                <i class="fas fa-euro-sign"></i>
+                Test +€10 EUR
+            </button>
+            <button class="btn btn-secondary" onclick="testKickFollow()">
+                <i class="fas fa-user-plus"></i>
+                Test Kick Follow
+            </button>
+            <button class="btn btn-secondary" onclick="testKickGiftBomb(undefined, 5)">
+                <i class="fas fa-bomb"></i>
+                Test Kick Gift Bomb
+            </button>
+            <button class="btn btn-secondary" onclick="testGoalIncrement('kick', 'subscribers', 1)">
+                <i class="fas fa-crown"></i>
+                Test +1 Kick Sub
+            </button>
+            <button class="btn btn-secondary" onclick="testGoalIncrement('twitch', 'cheers', 100)">
+                <i class="fas fa-gem"></i>
+                Test +100 Bits
+            </button>
+            <button class="btn btn-secondary" onclick="testGoalIncrement('tiktok', 'followers', 1)">
+                <i class="fab fa-tiktok"></i>
+                Test +1 TikTok Follow
+            </button>
+        </div>
+    </div>
+</div>
 
             <!-- Main Goal Overview -->
             <div class="goal-overview">
@@ -1652,11 +1840,11 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <h2 style="margin: 0;">Settings</h2>
                     <div style="display: flex; gap: 1rem;">
-                        <button class="btn btn-secondary" id="lockBtn" onclick="togglePanelLock()">
-                            <i class="fas fa-lock-open" id="lockIcon"></i>
-                            <span id="lockText">Lock Panels</span>
+                        <button class="btn btn-warning" id="lockBtn" onclick="togglePanelLock()">
+                            <i class="fas fa-lock" id="lockIcon"></i>
+                            <span id="lockText">Unlock Panels</span>
                         </button>
-                        <button class="btn btn-primary" onclick="saveSettings()">
+                        <button class="btn btn-primary" onclick="saveSettings(true)">
                             <i class="fas fa-save"></i>
                             Save Settings
                         </button>
@@ -1664,11 +1852,11 @@
                 </div>
 
                 <div class="settings-grid">
-                    <div class="setting-group" id="current-progress" draggable="true">
+                    <div class="setting-group" id="current-progress">
                         <div class="panel-drag-indicator">
                             <i class="fas fa-grip-vertical"></i>
                         </div>
-                        <h4>📊 Current Progress</h4>
+                        <h4>📊 Current Progress & Main Goal</h4>
                         <div
                             style="margin-bottom: 1rem; padding: 1rem; background: rgba(102, 126, 234, 0.1); border-radius: 8px; border: 1px solid rgba(102, 126, 234, 0.3);">
                             <strong style="color: #667eea;">💡 Set Starting Values</strong>
@@ -1687,100 +1875,19 @@
                                 Set to 50% of Goals
                             </button>
                         </div>
-                    </div>
-                    <div class="setting-group" id="custom-labels" draggable="true">
-                        <div class="panel-drag-indicator">
-                            <i class="fas fa-grip-vertical"></i>
-                        </div>
-                        <h4>🏷️ Custom Labels</h4>
-                        <div
-                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            <div class="form-group">
-                                <label>Twitch Followers</label>
-                                <input type="text" id="labelTwitchFollowers" class="form-control"
-                                    value="Twitch Followers" maxlength="25">
-                            </div>
-                            <div class="form-group">
-                                <label>Twitch Subscribers</label>
-                                <input type="text" id="labelTwitchSubscribers" class="form-control" value="Twitch Subs"
-                                    maxlength="25">
-                            </div>
-                            <div class="form-group">
-                                <label>Twitch Bits</label>
-                                <input type="text" id="labelTwitchCheers" class="form-control" value="Twitch Bits"
-                                    maxlength="25">
-                            </div>
-                            <div class="form-group">
-                                <label>YouTube Subscribers</label>
-                                <input type="text" id="labelYoutubeSubscribers" class="form-control"
-                                    value="YouTube Subs" maxlength="25">
-                            </div>
-                            <div class="form-group">
-                                <label>TikTok Followers</label>
-                                <input type="text" id="labelTiktokFollowers" class="form-control"
-                                    value="TikTok Followers" maxlength="25">
-                            </div>
-                            <div class="form-group">
-                                <label>Kick Followers</label>
-                                <input type="text" id="labelKickFollowers" class="form-control" value="Kick Followers"
-                                    maxlength="25">
-                            </div>
-                            <div class="form-group">
-                                <label>Kick Subscribers</label>
-                                <input type="text" id="labelKickSubscribers" class="form-control" value="Kick Subs"
-                                    maxlength="25">
-                            </div>
-                            <div class="form-group">
-                                <label>Donations</label>
-                                <input type="text" id="labelDonations" class="form-control" value="Donations"
-                                    maxlength="25">
-                            </div>
-                        </div>
-                        <small
-                            style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
-                            💡 Customize the display names for your progress bars (max 25 characters)
-                        </small>
-                    </div>
-
-                    <div class="setting-group" id="connection-settings" draggable="true">
-                        <div class="panel-drag-indicator">
-                            <i class="fas fa-grip-vertical"></i>
-                        </div>
-                        <h4>Connection Settings</h4>
-                        <div class="form-group">
-                            <label>Auto-Reconnect</label>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="checkbox" id="autoReconnectEnabled" checked>
-                                <span>Automatically reconnect when connection is lost</span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Max Reconnection Attempts</label>
-                            <input type="number" id="maxReconnectAttempts" class="form-control" value="10" min="1"
-                                max="50">
-                            <small
-                                style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
-                                💡 How many times to try reconnecting before giving up
-                            </small>
-                        </div>
-                        <div class="form-group">
-                            <label>Initial Reconnect Delay (seconds)</label>
-                            <input type="number" id="reconnectDelay" class="form-control" value="3" min="1" max="30">
-                            <small
-                                style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
-                                💡 Delay increases with each failed attempt (exponential backoff)
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="setting-group" id="goal-settings" draggable="true">
-                        <div class="panel-drag-indicator">
-                            <i class="fas fa-grip-vertical"></i>
-                        </div>
+                        <hr style="border-color: var(--border-color); margin: 1.5rem 0;">
                         <h4>Goal Settings</h4>
+                    <div
+                        style="margin-bottom: 1rem; padding: 1rem; background: rgba(102, 126, 234, 0.1); border-radius: 8px; border: 1px solid rgba(102, 126, 234, 0.3);">
+                        <strong style="color: #667eea;">🎯 Main Goal Focus</strong>
+                        <div style="margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                            This sets the large progress bar at the top of the dashboard to track the combined total
+                            for the selected goal type (e.g., all followers, all subs).
+                        </div>
+                    </div>
                         <div class="form-group">
                             <label>Main Goal Type</label>
-                            <select id="mainGoalType" class="form-control">
+                            <select id="mainGoalType" class="form-control" onchange="saveSettings(false)">
                                 <option value="followers">Total Followers</option>
                                 <option value="subscribers">Total Subscribers</option>
                                 <option value="donations">Total Donations</option>
@@ -1789,40 +1896,119 @@
                         </div>
                         <div class="form-group">
                             <label>Target</label>
-                            <input type="number" id="mainGoalTarget" class="form-control" value="100" min="1">
+                            <input type="number" id="mainGoalTarget" class="form-control" value="100" min="1" oninput="saveSettings(false)">
                         </div>
-                    </div>
+                        <hr style="border-color: var(--border-color); margin: 1.5rem 0;">
+                        <h4>🔗 URL Data Management</h4>
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem;">
+                            <button type="button" class="btn btn-primary" onclick="shareCurrentState()"
+                                style="font-size: 0.8rem;">
+                                <i class="fas fa-share"></i>
+                                Share Config
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="importFromUrl()"
+                                style="font-size: 0.8rem;">
+                                <i class="fas fa-download"></i>
+                                Import URL
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="exportConfigAsJson()"
+                                style="font-size: 0.8rem;">
+                                <i class="fas fa-file-export"></i>
+                                Export JSON
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="importConfigFromJson()"
+                                style="font-size: 0.8rem;">
+                                <i class="fas fa-file-import"></i>
+                                Import JSON
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="clearUrlData()"
+                                style="font-size: 0.8rem;">
+                                <i class="fas fa-trash"></i>
+                                Clear URL
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetPanelOrder()"
+                                style="font-size: 0.8rem;">
+                                <i class="fas fa-sort"></i>
+                                Reset Panel Order
+                            </button>
+                        </div>
+                        <small style="color: var(--text-secondary); margin-top: 0.5rem; display: block;">
+                            💡 Your settings are now stored in the URL. Bookmark or share the overlay URL to preserve
+                            your configuration!
+                        </small>
+                        <hr style="border-color: var(--border-color); margin: 1.5rem 0;">
+                        <div
+                            style="margin-bottom: 1rem; padding: 1rem; background: rgba(102, 126, 234, 0.1); border-radius: 8px; border: 1px solid rgba(102, 126, 234, 0.3);">
+                            <strong style="color: #667eea;"><i class="fas fa-palette"></i> Global Color Controls</strong>
+                            <div style="margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                                Quickly set all goal colors. These buttons affect the color pickers in each goal's
+                                panel.
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-secondary" onclick="resetColorsToDefault()"
+                                style="font-size: 0.9rem;">
+                                <i class="fas fa-undo"></i>
+                                Reset to Defaults
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="randomizeColors()"
+                                style="font-size: 0.9rem;">
+                                <i class="fas fa-random"></i>
+                                Randomize Colors
+                            </button>
+                        </div>
 
-                    <div class="setting-group" id="twitch-goals" draggable="true">
+
+                    </div>
+                    <div class="setting-group" id="twitch-goals">
                         <div class="panel-drag-indicator">
                             <i class="fas fa-grip-vertical"></i>
                         </div>
-                        <h4>Twitch Goals</h4>
+                        <h4><i class="fab fa-twitch" style="color: #9146ff; margin-right: 0.5rem;"></i>Twitch Goals</h4>
                         <div class="form-group">
                             <label>Twitch Followers Goal</label>
-                            <input type="number" id="twitchFollowerGoal" class="form-control" value="25" min="0">
+                            <input type="number" id="twitchFollowerGoal" class="form-control" value="25" min="0" oninput="saveSettings(false)">
                         </div>
                         <div class="form-group">
                             <label>Current Twitch Followers</label>
-                            <input type="number" id="twitchFollowerCurrent" class="form-control" value="0" min="0">
+                            <input type="number" id="twitchFollowerCurrent" class="form-control" value="0" min="0" oninput="saveSettings(false)">
                             <small
                                 style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
                                 💡 Set your starting follower count
                             </small>
                         </div>
+                        <div style="display: grid; grid-template-columns: 1fr 80px; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Twitch Followers Label</label>
+                                <input type="text" id="labelTwitchFollowers" class="form-control" oninput="saveSettings(false)" value="Twitch Followers" maxlength="25">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Color</label>
+                                <input type="color" id="colorTwitchFollowers" class="form-control" value="#9146ff" oninput="saveSettings(false)" style="height: 40px;">
+                            </div>
+                        </div>
                         <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="checkbox" id="autoIncrementTwitchFollowersEnabled">
-                                <span>🔥 Auto-Increment Goal</span>
-                            </label>
-                            <small
-                                style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                                Automatically increase goal by +1 when reached.
-                            </small>
+                            <div style="display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch twitch">
+                                        <input type="checkbox" id="overlayTwitchFollowers" checked onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Show on Overlay</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch twitch">
+                                        <input type="checkbox" id="autoIncrementTwitchFollowersEnabled" onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>🔥 Auto-Increment</span>
+                                </label>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Twitch Subscribers Goal</label>
-                            <input type="number" id="twitchSubGoal" class="form-control" value="10" min="0">
+                            <input type="number" id="twitchSubGoal" class="form-control" value="10" min="0" oninput="saveSettings(false)">
                             <small
                                 style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
                                 💡 Includes regular subs, resubs, and gifted subs
@@ -1830,34 +2016,77 @@
                         </div>
                         <div class="form-group">
                             <label>Current Twitch Subscribers</label>
-                            <input type="number" id="twitchSubCurrent" class="form-control" value="0" min="0">
+                            <input type="number" id="twitchSubCurrent" class="form-control" value="0" min="0" oninput="saveSettings(false)">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 80px; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Twitch Subscribers Label</label>
+                                <input type="text" id="labelTwitchSubscribers" class="form-control" value="Twitch Subs" oninput="saveSettings(false)" maxlength="25">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Color</label>
+                                <input type="color" id="colorTwitchSubscribers" class="form-control" value="#9146ff"
+                                    oninput="saveSettings(false)" style="height: 40px;">
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="checkbox" id="autoIncrementTwitchSubscribersEnabled">
-                                <span>🔥 Auto-Increment Goal</span>
-                            </label>
-                            <small
-                                style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                                Automatically increase goal by +1 when reached.
-                            </small>
+                            <div style="display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch twitch">
+                                        <input type="checkbox" id="overlayTwitchSubscribers" checked onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Show on Overlay</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch twitch">
+                                        <input type="checkbox" id="autoIncrementTwitchSubscribersEnabled" onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>🔥 Auto-Increment</span>
+                                </label>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Twitch Bits Goal</label>
-                            <input type="number" id="twitchCheerGoal" class="form-control" value="500" min="0">
+                            <input type="number" id="twitchCheerGoal" class="form-control" value="500" min="0" oninput="saveSettings(false)">
                         </div>
                         <div class="form-group">
                             <label>Current Twitch Bits</label>
-                            <input type="number" id="twitchCheerCurrent" class="form-control" value="0" min="0">
+                            <input type="number" id="twitchCheerCurrent" class="form-control" value="0" min="0" oninput="saveSettings(false)">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 80px; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Twitch Bits Label</label>
+                                <input type="text" id="labelTwitchCheers" class="form-control" value="Twitch Bits"
+                                    oninput="saveSettings(false)" maxlength="25">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Color</label>
+                                <input type="color" id="colorTwitchCheers" class="form-control" value="#9146ff"
+                                    oninput="saveSettings(false)" style="height: 40px;">
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                <input type="checkbox" id="autoIncrementTwitchCheersEnabled">
-                                <span>🔥 Auto-Increment Goal</span>
-                            </label>
+                            <div style="display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch twitch">
+                                        <input type="checkbox" id="overlayTwitchCheers" checked onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Show on Overlay</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch twitch">
+                                        <input type="checkbox" id="autoIncrementTwitchCheersEnabled" onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>🔥 Auto-Increment</span>
+                                </label>
+                            </div>
                             <div id="twitchCheerIncrementOptions" style="display: none;">
                                 <label for="twitchCheerIncrementAmount">Increment Amount</label>
-                                <select id="twitchCheerIncrementAmount" class="form-control">
+                                <select id="twitchCheerIncrementAmount" class="form-control" onchange="saveSettings(false)">
                                     <option value="100">+100 Bits</option>
                                     <option value="500">+500 Bits</option>
                                     <option value="1000">+1000 Bits</option>
@@ -1866,82 +2095,157 @@
                         </div>
                     </div>
 
-                    <div class="setting-group" id="other-platform-goals" draggable="true">
+                    <div class="setting-group" id="multi-platform-goals">
                         <div class="panel-drag-indicator">
                             <i class="fas fa-grip-vertical"></i>
                         </div>
-                        <h4>Other Platform Goals</h4>
+                        <h4><i class="fas fa-globe-americas" style="margin-right: 0.5rem;"></i>Multi-Platform Goals</h4>
+                        <h4 style="font-size: 1rem; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 1rem; margin-bottom: 1.5rem;"><i class="fab fa-youtube" style="color: #ff0000;"></i> YouTube Goals</h4>
                         <div class="form-group">
                             <label>YouTube Subscribers Goal</label>
-                            <input type="number" id="youtubeSubGoal" class="form-control" value="25" min="0">
+                            <input type="number" id="youtubeSubGoal" class="form-control" value="25" min="0" oninput="saveSettings(false)">
                         </div>
                         <div class="form-group">
                             <label>Current YouTube Subscribers</label>
-                            <input type="number" id="youtubeSubCurrent" class="form-control" value="0" min="0">
+                            <input type="number" id="youtubeSubCurrent" class="form-control" value="0" min="0" oninput="saveSettings(false)">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 80px; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>YouTube Subscribers Label</label>
+                                <input type="text" id="labelYoutubeSubscribers" class="form-control" oninput="saveSettings(false)" value="YouTube Subs" maxlength="25">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Color</label>
+                                <input type="color" id="colorYoutubeSubscribers" class="form-control" value="#ff0000" oninput="saveSettings(false)" style="height: 40px;">
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="checkbox" id="autoIncrementYoutubeSubscribersEnabled">
-                                <span>🔥 Auto-Increment Goal</span>
-                            </label>
-                            <small
-                                style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                                Automatically increase goal by +1 when reached.
-                            </small>
+                            <div style="display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch youtube">
+                                        <input type="checkbox" id="overlayYoutubeSubscribers" checked onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Show on Overlay</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch youtube">
+                                        <input type="checkbox" id="autoIncrementYoutubeSubscribersEnabled" onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>🔥 Auto-Increment</span>
+                                </label>
+                            </div>
                         </div>
+                        <h4 style="font-size: 1rem; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;"><i class="fab fa-tiktok" style="color: #ff0050;"></i> TikTok Goals</h4>
                         <div class="form-group">
                             <label>TikTok Followers Goal</label>
-                            <input type="number" id="tiktokFollowerGoal" class="form-control" value="25" min="0">
+                            <input type="number" id="tiktokFollowerGoal" class="form-control" value="25" min="0" oninput="saveSettings(false)">
                         </div>
                         <div class="form-group">
                             <label>Current TikTok Followers</label>
-                            <input type="number" id="tiktokFollowerCurrent" class="form-control" value="0" min="0">
+                            <input type="number" id="tiktokFollowerCurrent" class="form-control" value="0" min="0" oninput="saveSettings(false)">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 80px; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>TikTok Followers Label</label>
+                                <input type="text" id="labelTiktokFollowers" class="form-control" oninput="saveSettings(false)" value="TikTok Followers" maxlength="25">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Color</label>
+                                <input type="color" id="colorTiktokFollowers" class="form-control" value="#ff0050" oninput="saveSettings(false)" style="height: 40px;">
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="checkbox" id="autoIncrementTiktokFollowersEnabled">
-                                <span>🔥 Auto-Increment Goal</span>
-                            </label>
-                            <small
-                                style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                                Automatically increase goal by +1 when reached.
-                            </small>
+                            <div style="display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch tiktok">
+                                        <input type="checkbox" id="overlayTiktokFollowers" checked onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Show on Overlay</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch tiktok">
+                                        <input type="checkbox" id="autoIncrementTiktokFollowersEnabled" onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>🔥 Auto-Increment</span>
+                                </label>
+                            </div>
                         </div>
+                        <h4 style="font-size: 1rem; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;"><i class="fas fa-k" style="color: #53fc18;"></i> Kick Goals</h4>
                         <div class="form-group">
                             <label>Kick Followers Goal</label>
-                            <input type="number" id="kickFollowerGoal" class="form-control" value="25" min="0">
+                            <input type="number" id="kickFollowerGoal" class="form-control" value="25" min="0" oninput="saveSettings(false)">
                         </div>
                         <div class="form-group">
                             <label>Current Kick Followers</label>
-                            <input type="number" id="kickFollowerCurrent" class="form-control" value="0" min="0">
+                            <input type="number" id="kickFollowerCurrent" class="form-control" value="0" min="0" oninput="saveSettings(false)">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 80px; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Kick Followers Label</label>
+                                <input type="text" id="labelKickFollowers" class="form-control" value="Kick Followers" oninput="saveSettings(false)" maxlength="25">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Color</label>
+                                <input type="color" id="colorKickFollowers" class="form-control" value="#53fc18" oninput="saveSettings(false)" style="height: 40px;">
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="checkbox" id="autoIncrementKickFollowersEnabled">
-                                <span>🔥 Auto-Increment Goal</span>
-                            </label>
-                            <small
-                                style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                                Automatically increase goal by +1 when reached.
-                            </small>
+                            <div style="display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch kick">
+                                        <input type="checkbox" id="overlayKickFollowers" checked onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Show on Overlay</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch kick">
+                                        <input type="checkbox" id="autoIncrementKickFollowersEnabled" onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>🔥 Auto-Increment</span>
+                                </label>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Kick Subscribers Goal</label>
-                            <input type="number" id="kickSubGoal" class="form-control" value="10" min="0">
+                            <input type="number" id="kickSubGoal" class="form-control" value="10" min="0" oninput="saveSettings(false)">
                         </div>
                         <div class="form-group">
                             <label>Current Kick Subscribers</label>
-                            <input type="number" id="kickSubCurrent" class="form-control" value="0" min="0">
+                            <input type="number" id="kickSubCurrent" class="form-control" value="0" min="0" oninput="saveSettings(false)">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 80px; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Kick Subscribers Label</label>
+                                <input type="text" id="labelKickSubscribers" class="form-control" value="Kick Subs" oninput="saveSettings(false)" maxlength="25">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Color</label>
+                                <input type="color" id="colorKickSubscribers" class="form-control" value="#53fc18" oninput="saveSettings(false)" style="height: 40px;">
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="checkbox" id="autoIncrementKickSubscribersEnabled">
-                                <span>🔥 Auto-Increment Goal</span>
-                            </label>
-                            <small
-                                style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                                Automatically increase goal by +1 when reached.
-                            </small>
+                            <div style="display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch kick">
+                                        <input type="checkbox" id="overlayKickSubscribers" checked onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Show on Overlay</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch kick">
+                                        <input type="checkbox" id="autoIncrementKickSubscribersEnabled" onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>🔥 Auto-Increment</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -1952,7 +2256,7 @@
                         <h4>Donation Goals</h4>
                         <div class="form-group">
                             <label>Currency</label>
-                            <select id="donationsCurrency" class="form-control">
+                            <select id="donationsCurrency" class="form-control" onchange="saveSettings(false)">
                                 <option value="GBP">GBP (£)</option>
                                 <option value="USD">USD ($)</option>
                                 <option value="EUR">EUR (€)</option>
@@ -1960,27 +2264,45 @@
                         </div>
                         <div class="form-group">
                             <label>Total Amount Goal</label>
-                            <input type="number" id="donationsAmountGoal" class="form-control" value="100" min="0"
+                            <input type="number" id="donationsAmountGoal" class="form-control" value="100" min="0" oninput="saveSettings(false)"
                                 step="0.01">
                         </div>
                         <div class="form-group">
                             <label>Current Donation Amount</label>
-                            <input type="number" id="donationsAmountCurrent" class="form-control" value="0" min="0"
+                            <input type="number" id="donationsAmountCurrent" class="form-control" value="0" min="0" oninput="saveSettings(false)"
                                 step="0.01">
                             <small
                                 style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
                                 💡 Set your starting donation total
                             </small>
                         </div>
+                        <div style="display: grid; grid-template-columns: 1fr 80px; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Donations Label</label>
+                                <input type="text" id="labelDonations" class="form-control" value="Donations" oninput="saveSettings(false)" maxlength="25">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Color</label>
+                                <input type="color" id="colorDonations" class="form-control" value="#00ff7f" oninput="saveSettings(false)" style="height: 40px;">
+                            </div>
+                        </div>
                         <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="checkbox" id="autoIncrementDonationsTotalAmountEnabled">
-                                <span>🔥 Auto-Increment Goal</span>
-                            </label>
-                            <small
-                                style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
-                                Automatically increase goal by +5 when reached.
-                            </small>
+                            <div style="display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch">
+                                        <input type="checkbox" id="overlayDonations" checked onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Show on Overlay</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <label class="switch">
+                                        <input type="checkbox" id="autoIncrementDonationsTotalAmountEnabled" onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>🔥 Auto-Increment (+5)</span>
+                                </label>
+                            </div>
                         </div>
                         <div class="form-group">
                             <button type="button" class="btn btn-secondary" onclick="fetchExchangeRate()"
@@ -2003,60 +2325,22 @@
                         <h4>Overlay Settings</h4>
                         <div class="form-group">
                             <label>Display Duration (seconds)</label>
-                            <input type="number" id="overlayDuration" class="form-control" value="10" min="3" max="30">
+                            <input type="number" id="overlayDuration" class="form-control" value="10" min="3" max="30" oninput="saveSettings(false)">
                         </div>
                         <div class="form-group">
                             <label>Overlay Width (pixels)</label>
-                            <input type="number" id="overlayWidth" class="form-control" value="800" min="400" max="1200"
+                            <input type="number" id="overlayWidth" class="form-control" value="800" min="400" max="1200" oninput="saveSettings(false)"
                                 step="50">
                         </div>
                         <div class="form-group">
                             <label>Overlay Height (pixels)</label>
-                            <input type="number" id="overlayHeight" class="form-control" value="70" min="50" max="150"
+                            <input type="number" id="overlayHeight" class="form-control" value="70" min="50" max="150" oninput="saveSettings(false)"
                                 step="10">
                             <small
                                 style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
                                 💡 Set your OBS Browser Source to match these dimensions. Text and elements will scale
                                 automatically.
                             </small>
-                        </div>
-                        <div class="form-group">
-                            <label>Enable/Disable Goals</label>
-                            <div
-                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
-                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
-                                    <input type="checkbox" id="overlayTwitchFollowers" checked>
-                                    <span>Twitch Followers</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
-                                    <input type="checkbox" id="overlayTwitchSubscribers" checked>
-                                    <span>Twitch Subscribers</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
-                                    <input type="checkbox" id="overlayTwitchCheers" checked>
-                                    <span>Twitch Bits</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
-                                    <input type="checkbox" id="overlayYoutubeSubscribers" checked>
-                                    <span>YouTube Subscribers</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
-                                    <input type="checkbox" id="overlayTiktokFollowers" checked>
-                                    <span>TikTok Followers</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
-                                    <input type="checkbox" id="overlayKickFollowers" checked>
-                                    <span>Kick Followers</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
-                                    <input type="checkbox" id="overlayKickSubscribers" checked>
-                                    <span>Kick Subscribers</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
-                                    <input type="checkbox" id="overlayDonations" checked>
-                                    <span>Donations</span>
-                                </label>
-                            </div>
                         </div>
                         <div class="form-group">
                             <label>Goal Order</label>
@@ -2067,11 +2351,11 @@
                         </div>
                     </div>
 
-                    <div class="setting-group" id="edge-style-settings" draggable="true">
+                    <div class="setting-group" id="visual-customization-settings">
                         <div class="panel-drag-indicator">
                             <i class="fas fa-grip-vertical"></i>
                         </div>
-                        <h4>🎨 Progress Bar Style</h4>
+                        <h4>🎨 Visual Customization</h4>
 
                         <div class="form-group">
                             <label>Smart Edge Controls</label>
@@ -2120,18 +2404,21 @@
                             </h5>
                             <div class="form-group">
                                 <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                    <input type="checkbox" id="starEffectEnabled">
+                                    <label class="switch">
+                                        <input type="checkbox" id="starEffectEnabled" onchange="saveSettings(false)">
+                                        <span class="slider"></span>
+                                    </label>
                                     <span>Enable Starfall Effect</span>
                                 </label>
                             </div>
                             <div class="form-group">
                                 <label for="starEffectCount">Number of Stars</label>
-                                <input type="number" id="starEffectCount" class="form-control" value="25" min="5"
+                                <input type="number" id="starEffectCount" class="form-control" value="25" min="5" oninput="saveSettings(false)"
                                     max="100">
                             </div>
                             <div class="form-group">
                                 <label for="starEffectColors">Star Colors (comma-separated hex)</label>
-                                <input type="text" id="starEffectColors" class="form-control"
+                                <input type="text" id="starEffectColors" class="form-control" oninput="saveSettings(false)"
                                     value="#FFD700,#C0C0C0,#ADD8E6,#FFC0CB,#F0E68C,#FFFFFF">
                                 <small
                                     style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
@@ -2140,7 +2427,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="starEffectDuration">Animation Duration (seconds)</label>
-                                <input type="number" id="starEffectDuration" class="form-control" value="3" min="1"
+                                <input type="number" id="starEffectDuration" class="form-control" value="3" min="1" oninput="saveSettings(false)"
                                     max="10" step="0.1">
                             </div>
                             <small
@@ -2167,82 +2454,14 @@
                                 Notice how the left side always matches the container! ✨
                             </div>
                         </div>
-                    </div>
-
-                    <div class="setting-group" id="color-customization" draggable="true">
-                        <div class="panel-drag-indicator">
-                            <i class="fas fa-grip-vertical"></i>
-                        </div>
-                        <h4>🎨 Color Customization</h4>
-                        <div
-                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            <div class="form-group">
-                                <label>Twitch Followers</label>
-                                <input type="color" id="colorTwitchFollowers" class="form-control" value="#9146ff"
-                                    style="height: 40px;">
-                            </div>
-                            <div class="form-group">
-                                <label>Twitch Subscribers</label>
-                                <input type="color" id="colorTwitchSubscribers" class="form-control" value="#9146ff"
-                                    style="height: 40px;">
-                            </div>
-                            <div class="form-group">
-                                <label>Twitch Bits</label>
-                                <input type="color" id="colorTwitchCheers" class="form-control" value="#9146ff"
-                                    style="height: 40px;">
-                            </div>
-                            <div class="form-group">
-                                <label>YouTube Subscribers</label>
-                                <input type="color" id="colorYoutubeSubscribers" class="form-control" value="#ff0000"
-                                    style="height: 40px;">
-                            </div>
-                            <div class="form-group">
-                                <label>TikTok Followers</label>
-                                <input type="color" id="colorTiktokFollowers" class="form-control" value="#ff0050"
-                                    style="height: 40px;">
-                            </div>
-                            <div class="form-group">
-                                <label>Kick Followers</label>
-                                <input type="color" id="colorKickFollowers" class="form-control" value="#53fc18"
-                                    style="height: 40px;">
-                            </div>
-                            <div class="form-group">
-                                <label>Kick Subscribers</label>
-                                <input type="color" id="colorKickSubscribers" class="form-control" value="#53fc18"
-                                    style="height: 40px;">
-                            </div>
-                            <div class="form-group">
-                                <label>Donations</label>
-                                <input type="color" id="colorDonations" class="form-control" value="#00ff7f"
-                                    style="height: 40px;">
-                            </div>
-                        </div>
-                        <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-                            <button type="button" class="btn btn-secondary" onclick="resetColorsToDefault()"
-                                style="font-size: 0.9rem;">
-                                <i class="fas fa-undo"></i>
-                                Reset to Defaults
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="randomizeColors()"
-                                style="font-size: 0.9rem;">
-                                <i class="fas fa-random"></i>
-                                Randomize Colors
-                            </button>
-                        </div>
-                        <small
-                            style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
-                            💡 Colors apply to both dashboard progress bars and overlay progress bars
-                        </small>
-                    </div>
-
-                    <div class="setting-group" id="font-settings" draggable="true">
-                        <div class="panel-drag-indicator">
-                            <i class="fas fa-grip-vertical"></i>
-                        </div>
-                        <h4>Font Settings</h4>
+                        <hr style="border-color: var(--border-color); margin: 1.5rem 0;">
+                        <h4
+                            style="font-size: 1rem; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">
+                            <i class="fas fa-font"></i> Overlay Font Settings
+                        </h4>
                         <div class="form-group">
                             <label>Font Family</label>
-                            <select id="overlayFontFamily" class="form-control">
+                            <select id="overlayFontFamily" class="form-control" onchange="saveSettings(false)">
                                 <option value="Inter">Inter (Default)</option>
                                 <option value="Arial">Arial</option>
                                 <option value="Helvetica">Helvetica</option>
@@ -2259,7 +2478,7 @@
                         </div>
                         <div class="form-group" id="customFontGroup" style="display: none;">
                             <label>Custom Font Name</label>
-                            <input type="text" id="customFontName" class="form-control"
+                            <input type="text" id="customFontName" class="form-control" oninput="saveSettings(false)"
                                 placeholder="Enter font name (e.g., 'Roboto', 'Open Sans')">
                             <small
                                 style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
@@ -2269,7 +2488,7 @@
                         <div class="form-group">
                             <label>Font Size Scale (%)</label>
                             <input type="range" id="overlayFontSize" class="form-control" min="50" max="300" step="5"
-                                value="100" style="margin-bottom: 0.5rem;">
+                                oninput="saveSettings(false)" value="100" style="margin-bottom: 0.5rem;">
                             <div
                                 style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary);">
                                 <span>50%</span>
@@ -2284,56 +2503,13 @@
                         <div class="form-group">
                             <label for="overlayFontColor">Font Color</label>
                             <input type="color" id="overlayFontColor" class="form-control" value="#ffffff"
-                                style="height: 40px;">
+                                oninput="saveSettings(false)" style="height: 40px;">
                             <small
                                 style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">💡
                                 Sets the color for all text on the overlay.</small>
                         </div>
                     </div>
 
-                    <div class="setting-group" id="url-data-management" draggable="true">
-                        <div class="panel-drag-indicator">
-                            <i class="fas fa-grip-vertical"></i>
-                        </div>
-                        <h4>🔗 URL Data Management</h4>
-                        <div
-                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem;">
-                            <button type="button" class="btn btn-primary" onclick="shareCurrentState()"
-                                style="font-size: 0.8rem;">
-                                <i class="fas fa-share"></i>
-                                Share Config
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="importFromUrl()"
-                                style="font-size: 0.8rem;">
-                                <i class="fas fa-download"></i>
-                                Import URL
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="exportConfigAsJson()"
-                                style="font-size: 0.8rem;">
-                                <i class="fas fa-file-export"></i>
-                                Export JSON
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="importConfigFromJson()"
-                                style="font-size: 0.8rem;">
-                                <i class="fas fa-file-import"></i>
-                                Import JSON
-                            </button>
-                            <button type="button" class="btn btn-warning" onclick="clearUrlData()"
-                                style="font-size: 0.8rem;">
-                                <i class="fas fa-trash"></i>
-                                Clear URL
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="resetPanelOrder()"
-                                style="font-size: 0.8rem;">
-                                <i class="fas fa-sort"></i>
-                                Reset Panel Order
-                            </button>
-                        </div>
-                        <small style="color: var(--text-secondary); margin-top: 0.5rem; display: block;">
-                            💡 Your settings are now stored in the URL. Bookmark or share the overlay URL to preserve
-                            your configuration!
-                        </small>
-                    </div>
                 </div>
             </div>
         </div>
@@ -2381,7 +2557,7 @@
                 </div>
 
                 <div class="obs-instructions">
-                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">📺 Netlify + URL Storage Setup</h4>
+                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">📺 OBS Overlay</h4>
                     <div
                         style="background: var(--glass-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
                         <div
@@ -2407,17 +2583,22 @@
                             </div>
                         </div>
 
-                        <ol style="margin-left: 1.5rem; color: var(--text-secondary); line-height: 1.6;">
-                            <li>In OBS Studio, add a new <strong>Browser Source</strong></li>
-                            <li>Copy your <strong>Overlay URL</strong> above and paste it into the URL field</li>
-                            <li>Set Width and Height to match your overlay settings (check Settings → Overlay Settings)
-                            </li>
-                            <li><strong>IMPORTANT:</strong> Check <strong>"Shutdown source when not visible"</strong>
-                                and <strong>"Refresh browser when scene becomes active"</strong></li>
-                            <li>Set <strong>FPS:</strong> to <strong>30</strong></li>
-                            <li>The overlay will load with all your settings embedded in the URL</li>
-                            <li>Use the Start/Stop buttons above to control the overlay display</li>
-                        </ol>
+                        <div style="display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: start;">
+                            <ol style="margin-left: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                                <li>In OBS Studio, add a new <strong>Browser Source</strong>.</li>
+                                <li>Copy your <strong>Overlay URL</strong> above and paste it into the URL field.</li>
+                                <li>Set Width and Height to match your overlay settings.</li>
+                                <li><strong>IMPORTANT:</strong> Uncheck <strong>"Shutdown source when not visible"</strong> to keep the connection alive.</li>
+                                <li>Check <strong>"Refresh browser when scene becomes active"</strong>.</li>
+                                <li>The overlay will now load with all your settings and connect to Streamer.bot automatically.</li>
+                            </ol>
+                            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 8px; padding: 1rem; max-width: 300px;">
+                                <strong style="color: var(--warning);"><i class="fas fa-lightbulb"></i> Pro Tip:</strong>
+                                <p style="color: #fcd34d; font-size: 0.9rem; margin-top: 0.5rem; line-height: 1.6;">
+                                    Don't forget to connect to Streamer.bot on the Dashboard page! The overlay uses the IP and port settings from your dashboard to connect automatically.
+                                </p>
+                            </div>
+                        </div>
 
                         <div
                             style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(34, 197, 94, 0.1); border-radius: 8px; border: 1px solid rgba(34, 197, 94, 0.3);">
@@ -2478,13 +2659,10 @@
                         <i class="fas fa-k"></i>
                         Debug Kick
                     </button>
-                    <button class="btn btn-warning" onclick="testKickFollow()">
-                        <i class="fas fa-user-plus"></i>
-                        Test Kick Follow
-                    </button>
-                    <button class="btn btn-warning" onclick="testKickGiftBomb(undefined, 5)">
-                        <i class="fas fa-bomb"></i>
-                        Test Kick Gift Bomb
+                    <button class="btn btn-secondary" onclick="debugKickChannel()"
+                        style="background: #53fc18; color: #000;">
+                        <i class="fas fa-play"></i>
+                        Debug Kick Channel
                     </button>
 
                 </div>
@@ -2609,31 +2787,17 @@
                 </div>
             </div>
 
-            <!-- Personal Message -->
-            <div class="goal-overview" style="text-align: center;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">❤️</div>
-                <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.5rem;">From MetalBenji</h3>
-                <p
-                    style="color: var(--text-secondary); line-height: 1.8; max-width: 600px; margin: 0 auto; font-size: 1.1rem;">
-                    Every bug report, feature idea, word of encouragement, and moment spent testing has shaped
-                    StreamGoals
-                    into something special. This isn't just my project—it's <strong>our</strong> project.
-                </p>
-                <p style="color: var(--text-primary); margin-top: 1.5rem; font-style: italic; font-size: 1rem;">
-                    Thank you for believing in the vision and making it reality. 🚀
-                </p>
-            </div>
         </div>
     </main>
 
     <footer class="app-footer">
         <div class="footer-content">
             <span class="footer-text">
-                Made with <i class="fas fa-heart footer-heart"></i> by
+                Made by
                 <strong class="footer-author">MetalBenji</strong>
             </span>
             <div class="footer-links">
-                <span class="footer-version">StreamGoals v0.01</span>
+                <span class="footer-version">StreamGoals v1</span>
                 <span class="footer-separator">•</span>
                 <span class="footer-tech" id="randomFooterMessage">Powered by JavaScript & CSS Magic</span>
             </div>
@@ -2654,6 +2818,7 @@
             settings: {
                 mainGoal: { type: 'followers', target: 100 },
                 // autoIncrement: false, // REMOVED global auto-increment
+                panelsLocked: true, // Default to locked
                 twitch: {
                     followers: 25,
                     subscribers: 10,
@@ -2670,6 +2835,8 @@
                 },
                 kick: {
                     followers: 25, subscribers: 10,
+                    channelName: '', // ADD THIS LINE
+                    enabled: true, // ADD THIS LINE
                     autoIncrement: { followers: false, subscribers: false }
                 },
                 donations: {
@@ -2677,6 +2844,8 @@
                     autoIncrement: { totalAmount: false }
                 },
                 connection: {
+                    server: '127.0.0.1',
+                    port: '8080',
                     autoReconnect: true,
                     maxAttempts: 10,
                     initialDelay: 3
@@ -2687,17 +2856,11 @@
                 },
                 panelOrder: [
                     'current-progress',
-                    'custom-labels',
-                    'connection-settings',
-                    'goal-settings',
                     'twitch-goals',
-                    'other-platform-goals',
+                    'multi-platform-goals',
                     'donation-goals',
                     'overlay-settings',
-                    'edge-style-settings',
-                    'color-customization',
-                    'font-settings',
-                    'url-data-management'
+                    'visual-customization-settings',
                 ],
                 overlay: {
                     duration: 10,
@@ -2813,12 +2976,11 @@
         let overlayInterval = null;
         let currentOverlayGoalIndex = 0;
         let overlayRunning = false;
-        let isOverlayOnlyMode = false;
-        let panelsLocked = false; // Moved up for early initialization
+        let isOverlayOnlyMode = false; 
 
         // Auto-reconnection variables
         let reconnectionAttempts = 0;
-        let reconnectionDelay = 3000; // Will be set from settings
+        let reconnectionDelay = 3000; // Will be set from settings 
         let reconnectionTimer = null;
         let manualDisconnect = false;
 
@@ -3329,112 +3491,11 @@
         function initializeOverlayOnlyMode() {
             if (!isOverlayOnlyMode) return;
 
-            debugLog('🌐 INITIALIZING NETLIFY + STREAMER.BOT DIRECT MODE');
-
-            // Configuration - Update these if needed
-            const STREAMERBOT_CONFIG = {
-                server: '127.0.0.1',  // Your local Streamer.bot IP
-                port: '8080',         // Your Streamer.bot WebSocket port  
-                reconnectDelay: 5000  // 5 seconds between reconnect attempts
-            };
-
-            let overlayWebSocket = null;
-            let reconnectAttempts = 0;
-            let isConnected = false;
-
-            function connectToStreamerBot() {
-                const wsUrl = `ws://${STREAMERBOT_CONFIG.server}:${STREAMERBOT_CONFIG.port}/`;
-                debugLog(`🔌 Connecting to Streamer.bot: ${wsUrl}`);
-
-                try {
-                    overlayWebSocket = new WebSocket(wsUrl);
-
-                    overlayWebSocket.onopen = () => {
-                        debugLog('✅ Connected to Streamer.bot!');
-                        isConnected = true;
-                        reconnectAttempts = 0;
-
-                        // Wait for Hello message, then subscribe
-                        debugLog('⏳ Waiting for Hello message...');
-                    };
-
-                    overlayWebSocket.onmessage = (event) => {
-                        try {
-                            const data = JSON.parse(event.data);
-                            debugLog('📨 Received:', data.request || data.event?.source + '.' + data.event?.type || 'Unknown');
-
-                            // Handle Hello message
-                            if (data.request === 'Hello') {
-                                debugLog('👋 Hello received, subscribing to events...');
-
-                                const subscribeMessage = {
-                                    request: 'Subscribe',
-                                    id: 'netlify-overlay-direct',
-                                    events: {
-                                        'Twitch': ['Follow', 'Sub', 'ReSub', 'GiftSub', 'GiftBomb', 'Cheer'],
-                                        'YouTube': ['NewSponsor', 'MemberMileStone'],
-                                        'General': ['Custom']
-                                    }
-                                };
-
-                                overlayWebSocket.send(JSON.stringify(subscribeMessage));
-                                return;
-                            }
-
-                            // Handle subscription confirmation
-                            if (data.request === 'Subscribe' && !data.error) {
-                                debugLog('📡 Successfully subscribed to events!');
-                                return;
-                            }
-
-                            // Handle actual events
-                            if (data.event && data.event.source && data.event.type) {
-                                const eventKey = `${data.event.source}.${data.event.type}`;
-                                debugLog(`🎯 Processing event: ${eventKey}`);
-
-                                // Process the event using existing handlers
-                                handleStreamerBotMessage(data);
-
-                                // Update overlay immediately
-                                if (overlayRunning) {
-                                    syncOverlayDisplay();
-
-                                    debugLog('⚡ Overlay updated from direct event!');
-                                }
-                            }
-
-                        } catch (error) {
-                            debugLog('❌ Error processing message:', error);
-                        }
-                    };
-
-                    overlayWebSocket.onerror = (error) => {
-                        debugLog('❌ WebSocket error:', error);
-                        isConnected = false;
-                    };
-
-                    overlayWebSocket.onclose = (event) => {
-                        debugLog(`🔌 Connection closed (code: ${event.code})`);
-                        isConnected = false;
-
-                        // Auto-reconnect with exponential backoff
-                        if (reconnectAttempts < 10) {
-                            reconnectAttempts++;
-                            const delay = Math.min(STREAMERBOT_CONFIG.reconnectDelay * reconnectAttempts, 30000);
-
-                            debugLog(`🔄 Reconnecting in ${delay / 1000}s (attempt ${reconnectAttempts})`);
-                            setTimeout(connectToStreamerBot, delay);
-                        }
-                    };
-
-                } catch (error) {
-                    debugLog('💥 Failed to create WebSocket:', error);
-                    isConnected = false;
-                }
-            }
-
-            // Start connection
-            connectToStreamerBot();
+            debugLog('🌐 INITIALIZING OVERLAY-ONLY MODE');
+            
+            // The overlay now uses the main connection logic, which reads settings from the URL.
+            // This ensures the IP/port from the dashboard are used correctly.
+            connectStreamerBot();
 
             // Keyboard shortcuts for testing
             document.addEventListener('keydown', (event) => {
@@ -3510,6 +3571,25 @@
             }
 
             showNotification(message, 'success');
+        }
+
+        function testYouTubeSub() {
+            debugLog('🧪 Testing +1 YouTube Subscriber');
+            const currentSubs = appState.goals.youtube.subscribers || 0;
+            const newSubs = currentSubs + 1;
+
+            // Simulate the event data structure that handleCustomEvent expects
+            const testData = {
+                platform: 'YouTube',
+                event: 'subscriberUpdate',
+                subscriberCount: newSubs
+            };
+            
+            // Call the handler
+            handleCustomEvent(testData);
+
+            // The handler will update the goal and UI.
+            showNotification(`🧪 Test: +1 YouTube Sub (New total: ${newSubs})`, 'success');
         }
 
         // Test USD donation function - FROM VERSION 2!
@@ -3895,12 +3975,11 @@
 
         // Streamer.bot Connection with Auto-Reconnect
         function connectStreamerBot() {
-            debugLog('=== Starting Streamer.bot Connection ===');
+            debugLog('=== Starting Streamer.bot Connection ==='); 
 
-            const serverEl = document.getElementById('streamerbotServer');
-            const portEl = document.getElementById('streamerbotPort');
-            const server = serverEl.value.trim() || '127.0.0.1';
-            const port = portEl.value.trim() || '8080';
+            // Use settings from appState
+            const server = appState.settings.connection.server || '127.0.0.1';
+            const port = appState.settings.connection.port || '8080';
 
             debugLog(`Connecting to: ${server}:${port}`);
             showNotification('🔌 Connecting to Streamer.bot...', 'warning');
@@ -4087,12 +4166,21 @@
                         id: 'streamgoals-subscription-1',
                         events: {
                             'Twitch': ['Follow', 'Sub', 'ReSub', 'GiftSub', 'GiftBomb', 'Cheer'],
-                            'YouTube': ['NewSponsor', 'MemberMileStone', 'MembershipGift', 'GiftMembershipReceived', 'StatisticsUpdated'],
+                            'YouTube': ['NewSponsor', 'MemberMileStone', 'MembershipGift',
+                                'GiftMembershipReceived', 'StatisticsUpdated'
+                            ],
+                            'Kick': ['Follow', 'Sub', 'GiftSub', 'Host'], // ADD THIS IF STREAMER.BOT SUPPORTS IT
                             'StreamElements': ['Tip'],
                             'StreamLabs': ['Donation'],
                             'General': ['Custom']
                         }
                     };
+
+                    // Optional: Pass channel info if Streamer.bot needs it
+                    if (appState.settings.kick.channelName && appState.settings.kick.enabled) {
+                        subscribeMessage.kickChannel = appState.settings.kick.channelName;
+                    }
+
 
                     debugLog('Sending CORRECTED subscription message with ID:', subscribeMessage);
                     streamerbotClient.send(JSON.stringify(subscribeMessage));
@@ -4598,6 +4686,13 @@
                         updateGoal('kick', 'subscribers');
                         showNotification(`🎉 New Kick subscriber: ${userName}!`, 'success');
                     }
+                    else if (kickData.event === 'giftBomb' || kickData.triggerCustomCodeEventName === 'kickGiftBomb') {
+                        const gifterName = kickData.gifter || 'Someone';
+                        const subCount = kickData.count || 1;
+                        appState.goals.kick.subscribers += subCount;
+                        updateGoal('kick', 'subscribers');
+                        showNotification(`🎁💥 ${gifterName} gifted ${subCount} subs on Kick!`, 'success');
+                    }
                     else if (kickData.event === 'raid' || kickData.triggerCustomCodeEventName === 'kickIncomingRaid') {
                         const userName = kickData.user || 'Someone';
                         const viewers = kickData.viewers || 0;
@@ -4674,6 +4769,114 @@
                     goalTarget: appState.settings.youtube.subscribers,
                     synced: lastYouTubeSubscriberCount === appState.goals.youtube.subscribers,
                     percentage: percentage
+                };
+            }
+            // Enhanced Kick Testing Functions
+            function testKickFollow(username = 'TestUser') {
+                debugLog('🧪 Testing Kick Follow Event');
+                const testData = {
+                    platform: 'Kick',
+                    event: 'follow',
+                    user: username,
+                    userName: username
+                };
+                handleCustomEvent(testData);
+                showNotification(`🧪 Test: Kick follow from ${username}`, 'success');
+            }
+
+            function testKickSubscribe(username = 'TestSub') {
+                debugLog('🧪 Testing Kick Subscribe Event');
+                const testData = {
+                    platform: 'Kick',
+                    event: 'subscribe',
+                    user: username,
+                    userName: username
+                };
+                handleCustomEvent(testData);
+                showNotification(`🧪 Test: Kick sub from ${username}`, 'success');
+            }
+
+            function testKickGiftBomb(gifterName = 'TestGifter', subCount = 5) {
+                debugLog('🧪 Testing Kick Gift Bomb Event');
+                const testData = {
+                    platform: 'Kick',
+                    event: 'giftBomb',
+                    gifter: gifterName,
+                    count: subCount
+                };
+                handleCustomEvent(testData);
+                showNotification(`🧪 Test: Kick gift bomb - ${gifterName} gifted ${subCount} subs`, 'success');
+            }
+
+            function testKickRaid(raiderName = 'TestRaider', viewers = 25) {
+                debugLog('🧪 Testing Kick Raid Event');
+                const testData = {
+                    platform: 'Kick',
+                    event: 'raid',
+                    user: raiderName,
+                    viewers: viewers
+                };
+                handleCustomEvent(testData);
+                showNotification(`🧪 Test: Kick raid from ${raiderName} with ${viewers} viewers`, 'success');
+            }
+
+            // Debug function specifically for Kick events
+            function debugKickIntegration() {
+                debugLog('=== ENHANCED KICK INTEGRATION DEBUG ===');
+                debugLog('Connection Status:', connectionStatus);
+                debugLog('Kick Goals Status:');
+                debugLog(`  - Followers: ${appState.goals.kick.followers}/${appState.settings.kick.followers}`);
+                debugLog(`  - Subscribers: ${appState.goals.kick.subscribers}/${appState.settings.kick.subscribers}`);
+                debugLog(
+                    `  - Auto-increment: Followers=${appState.settings.kick?.autoIncrement?.followers}, Subs=${appState.settings.kick?.autoIncrement?.subscribers}`
+                );
+                debugLog('Expected Kick Event Formats:');
+                debugLog('Format 1 - Direct: {platform: "Kick", event: "follow", user: "username"}');
+                debugLog('Format 2 - Nested: {data: {platform: "Kick", event: "subscribe", userName: "user"}}');
+                debugLog('Format 3 - Trigger: {triggerCustomCodeEventName: "kickFollow", user: "username"}');
+                debugLog('🧪 Available Test Functions:');
+                debugLog('- testKickFollow("username")');
+                debugLog('- testKickSubscribe("username")');
+                debugLog('- testKickGiftBomb("gifter", 5)');
+                debugLog('- testKickRaid("raider", 25)');
+                if (streamerbotClient && connectionStatus === 'connected') {
+                    debugLog('✅ WebSocket connected to Streamer.bot');
+                    debugLog('Subscribed to: General.Custom (receives Kick events)');
+                } else {
+                    debugLog('❌ Not connected to Streamer.bot');
+                    debugLog('💡 Connect to Streamer.bot to receive real Kick events');
+                }
+                showNotification('🚀 Enhanced Kick integration debug complete - check console', 'success');
+                return {
+                    currentFollowers: appState.goals.kick.followers,
+                    followerTarget: appState.settings.kick.followers,
+                    currentSubscribers: appState.goals.kick.subscribers,
+                    subscriberTarget: appState.settings.kick.subscribers,
+                    connected: connectionStatus === 'connected',
+                    autoIncrement: appState.settings.kick?.autoIncrement
+                };
+            }
+
+            function debugKickChannel() {
+                debugLog('=== KICK CHANNEL DEBUG ===');
+                debugLog('Channel Name:', appState.settings.kick.channelName || 'NOT SET');
+                debugLog('Kick Enabled:', appState.settings.kick.enabled);
+                debugLog('Kick Goals - Followers:',
+                    `${appState.goals.kick.followers}/${appState.settings.kick.followers}`);
+                debugLog('Kick Goals - Subscribers:',
+                    `${appState.goals.kick.subscribers}/${appState.settings.kick.subscribers}`);
+                debugLog('Connection Status:', connectionStatus);
+                if (!appState.settings.kick.channelName) {
+                    debugLog('❌ ERROR: No Kick channel name set! Go to Settings > Kick Platform Settings');
+                    showNotification('❌ Set your Kick channel name in Settings first!', 'error');
+                } else {
+                    debugLog('✅ Kick channel configured:', appState.settings.kick.channelName);
+                    showNotification(`✅ Kick configured for: ${appState.settings.kick.channelName}`, 'success');
+                }
+                return {
+                    channelName: appState.settings.kick.channelName,
+                    enabled: appState.settings.kick.enabled,
+                    connected: connectionStatus === 'connected'
                 };
             }
 
@@ -4759,68 +4962,76 @@
             }
 
             function updateConnectionStatus() {
-                const statusEl = document.getElementById('connectionStatus');
-                const statusTextEl = document.getElementById('connectionStatusText');
+                const sbLight = document.getElementById('sbConnectionLight');
+                const sbText = document.getElementById('sbConnectionText');
                 const connectBtn = document.getElementById('connectBtn');
 
-                let statusHTML = '';
                 let statusText = '';
-                let color = '';
                 let buttonText = '';
                 let buttonClass = '';
                 let buttonIcon = '';
+                let lightClass = 'disconnected';
 
                 switch (connectionStatus) {
                     case 'connected':
-                        statusHTML = '<i class="fas fa-circle" style="color: #22c55e;"></i> Connected';
+                        lightClass = 'connected';
                         statusText = 'Connected to Streamer.bot';
-                        color = '#22c55e';
                         buttonText = 'Disconnect';
                         buttonClass = 'btn btn-secondary';
-                        buttonIcon = 'fas fa-plug';
+                        buttonIcon = 'fas fa-plug-circle-check';
                         break;
                     case 'connecting':
-                        statusHTML = '<i class="fas fa-spinner fa-spin" style="color: #f59e0b;"></i> Connecting...';
-                        statusText = 'Connecting to Streamer.bot...';
-                        color = '#f59e0b';
+                        lightClass = 'connecting';
+                        statusText = 'Connecting...';
                         buttonText = 'Cancel';
                         buttonClass = 'btn btn-secondary';
                         buttonIcon = 'fas fa-times';
                         break;
                     case 'reconnecting':
-                        statusHTML = '<i class="fas fa-sync fa-spin" style="color: #f59e0b;"></i> Reconnecting...';
+                        lightClass = 'connecting'; // Use same style for reconnecting
                         statusText = `Reconnecting... (${reconnectionAttempts}/${appState.settings.connection.maxAttempts})`;
-                        color = '#f59e0b';
                         buttonText = 'Cancel';
                         buttonClass = 'btn btn-secondary';
                         buttonIcon = 'fas fa-times';
                         break;
                     case 'failed':
                     case 'error':
-                        statusHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i> Error';
+                        lightClass = 'disconnected';
                         statusText = 'Connection failed';
-                        color = '#ef4444';
                         buttonText = 'Connect';
                         buttonClass = 'btn btn-primary';
-                        buttonIcon = 'fas fa-plug';
+                        buttonIcon = 'fas fa-plug-circle-xmark';
                         break;
-                    default:
-                        statusHTML = '<i class="fas fa-circle" style="color: #ef4444;"></i> Disconnected';
-                        statusText = 'Disconnected - Use simulation buttons to test';
-                        color = '#ef4444';
+                    default: // disconnected
+                        lightClass = 'disconnected';
+                        statusText = 'Disconnected';
                         buttonText = 'Connect';
                         buttonClass = 'btn btn-primary';
                         buttonIcon = 'fas fa-plug';
                 }
 
-                if (statusEl) statusEl.innerHTML = statusHTML;
-                if (statusTextEl) {
-                    statusTextEl.textContent = statusText;
-                    statusTextEl.style.color = color;
-                }
+                if (sbLight) sbLight.className = `connection-indicator-light ${lightClass}`;
+                if (sbText) sbText.textContent = statusText;
+
                 if (connectBtn) {
                     connectBtn.className = buttonClass;
                     connectBtn.innerHTML = `<i class="${buttonIcon}"></i> ${buttonText}`;
+                }
+
+                // Update Kick status light
+                const kickStatusEl = document.getElementById('kickConnectionStatus');
+                const kickTextEl = document.getElementById('kickConnectionText');
+                if (kickStatusEl && kickTextEl) {
+                    if (connectionStatus === 'connected' && appState.settings.kick.channelName && appState.settings.kick.enabled) {
+                        kickStatusEl.className = 'connection-indicator-light connected';
+                        kickTextEl.textContent = `Connected - Channel: ${appState.settings.kick.channelName}`;
+                    } else if (connectionStatus === 'connected' && (!appState.settings.kick.channelName || !appState.settings.kick.enabled)) {
+                        kickStatusEl.className = 'connection-indicator-light connecting'; // Yellow for warning
+                        kickTextEl.textContent = 'Connected to SB - Configure Kick settings';
+                    } else {
+                        kickStatusEl.className = 'connection-indicator-light disconnected';
+                        kickTextEl.textContent = 'Configure channel name and connect to Streamer.bot';
+                    }
                 }
             }
 
@@ -5166,6 +5377,8 @@
                 document.getElementById('kickFollowerCurrent').value = appState.goals.kick.followers;
                 document.getElementById('kickSubGoal').value = appState.settings.kick.subscribers;
                 document.getElementById('kickSubCurrent').value = appState.goals.kick.subscribers;
+                document.getElementById('kickChannelName').value = appState.settings.kick.channelName || '';
+                document.getElementById('kickPlatformEnabled').checked = appState.settings.kick.enabled !== false;
 
                 document.getElementById('donationsCurrency').value = appState.settings.donations.currency;
                 document.getElementById('donationsAmountGoal').value = appState.settings.donations.totalAmount;
@@ -5183,6 +5396,9 @@
                 document.getElementById('starEffectDuration').value = appState.settings.overlay.starEffect.duration;
 
                 // Load connection settings
+                document.getElementById('streamerbotServer').value = appState.settings.connection.server || '127.0.0.1';
+                document.getElementById('streamerbotPort').value = appState.settings.connection.port || '8080';
+
                 document.getElementById('autoReconnectEnabled').checked = appState.settings.connection.autoReconnect;
                 document.getElementById('maxReconnectAttempts').value = appState.settings.connection.maxAttempts;
                 document.getElementById('reconnectDelay').value = appState.settings.connection.initialDelay;
@@ -5312,11 +5528,6 @@
                 if (eurRateEl) eurRateEl.textContent = appState.exchangeRates.EUR.toFixed(4);
 
                 // Load lock state
-                if (appState.settings.panelsLocked) {
-                    panelsLocked = false; // Set to false first
-                    togglePanelLock(); // Then toggle to apply locked state
-                }
-
                 // Load edge style settings
                 if (appState.settings.edgeStyles) {
                     const containerOptions = document.querySelectorAll('.edge-style-control:first-child .edge-style-option');
@@ -5343,10 +5554,7 @@
                 }
             }
 
-            function saveSettings() {
-                // Save lock state
-                appState.settings.panelsLocked = panelsLocked;
-
+            function saveSettings(showNotif = true) {
                 // Main goal settings
                 const mainGoalType = document.getElementById('mainGoalType').value;
                 const mainGoalTarget = parseInt(document.getElementById('mainGoalTarget').value);
@@ -5368,6 +5576,12 @@
                 const kickSubGoal = parseInt(document.getElementById('kickSubGoal').value);
                 const kickSubCurrent = parseInt(document.getElementById('kickSubCurrent').value);
 
+                // Kick platform settings
+                const kickChannelName = document.getElementById('kickChannelName').value.trim();
+                const kickEnabled = document.getElementById('kickPlatformEnabled').checked;
+
+
+
                 // Donation settings
                 const donationsCurrency = document.getElementById('donationsCurrency').value;
                 const donationsAmountGoal = parseFloat(document.getElementById('donationsAmountGoal').value);
@@ -5379,6 +5593,9 @@
                 const overlayHeight = parseInt(document.getElementById('overlayHeight').value);
 
                 // Connection settings
+                const server = document.getElementById('streamerbotServer').value;
+                const port = document.getElementById('streamerbotPort').value;
+
                 const autoReconnect = document.getElementById('autoReconnectEnabled').checked;
                 const maxAttempts = parseInt(document.getElementById('maxReconnectAttempts').value);
                 const initialDelay = parseInt(document.getElementById('reconnectDelay').value);
@@ -5422,6 +5639,10 @@
                 appState.settings.kick.followers = kickFollowerGoal;
                 appState.settings.kick.subscribers = kickSubGoal;
 
+                appState.settings.kick.channelName = kickChannelName;
+                appState.settings.kick.enabled = kickEnabled;
+
+
                 appState.settings.donations.currency = donationsCurrency;
                 appState.settings.donations.totalAmount = donationsAmountGoal;
                 // Update current progress values
@@ -5448,6 +5669,8 @@
                 appState.settings.overlay.starEffect.duration = starEffectDuration;
 
                 // Save connection settings
+                appState.settings.connection.server = server;
+                appState.settings.connection.port = port;
                 appState.settings.connection.autoReconnect = autoReconnect;
                 appState.settings.connection.maxAttempts = maxAttempts;
                 appState.settings.connection.initialDelay = initialDelay;
@@ -5561,7 +5784,10 @@
                 }
 
                 debugLog('Settings saved to URL', appState.settings);
-                showNotification('💾 Settings saved to URL!', 'success');
+                if (showNotif) {
+                    showNotification('💾 Settings saved to URL!', 'success');
+                }
+                updateConnectionStatus(); // This should always run
             }
 
             // Helper function to get default labels
@@ -6057,27 +6283,6 @@
                 });
 
                 debugLog('Panel order loaded:', appState.settings.panelOrder);
-            }
-
-            function resetPanelOrder() {
-                const defaultOrder = [
-                    'current-progress',
-                    'custom-labels',
-                    'connection-settings',
-                    'goal-settings',
-                    'twitch-goals',
-                    'other-platform-goals',
-                    'donation-goals',
-                    'overlay-settings',
-                    'color-customization',
-                    'font-settings',
-                    'url-data-management'
-                ];
-
-                appState.settings.panelOrder = defaultOrder;
-                loadPanelOrder();
-                saveStateToUrl();
-                showNotification('📋 Panel order reset to default!', 'success');
             }
 
             // Notifications
@@ -6767,6 +6972,7 @@
                     // Load saved panel order
                     loadPanelOrder();
 
+
                     // Initialize overlay controls in stopped state
                     updateOverlayControls('stopped');
 
@@ -6801,42 +7007,57 @@
                     setInterval(() => {
                         fetchExchangeRate();
                     }, 24 * 60 * 60 * 1000);
+
+                    // Apply initial lock state AFTER everything is loaded and ordered
+                    if (appState.settings.panelsLocked === undefined) {
+                        appState.settings.panelsLocked = true; // Default to locked if not defined
+                    }
+                    applyLockState(appState.settings.panelsLocked);
                 }
             });
 
             // Panel Lock System
 
             function togglePanelLock() {
-                panelsLocked = !panelsLocked;
+                // Toggle the state in the appState object
+                appState.settings.panelsLocked = !appState.settings.panelsLocked;
+
+                // Apply the new state to the UI
+                applyLockState(appState.settings.panelsLocked);
+
+                // Save the state to the URL so it persists on reload
+                saveStateToUrl();
+                generateOverlayUrl();
+
+                if (appState.settings.panelsLocked) {
+                    showNotification('🔒 All panels locked - drag disabled', 'warning');
+                    debugLog('All panels locked');
+                } else {
+                    showNotification('🔓 All panels unlocked - drag enabled', 'success');
+                    debugLog('All panels unlocked');
+                }
+            }
+
+            function applyLockState(isLocked) {
                 const lockIcon = document.getElementById('lockIcon');
                 const lockText = document.getElementById('lockText');
                 const lockBtn = document.getElementById('lockBtn');
                 const panels = document.querySelectorAll('.setting-group');
 
-                if (panelsLocked) {
-                    // Lock panels - disable dragging but keep same look
+                if (isLocked) {
                     lockIcon.className = 'fas fa-lock';
                     lockText.textContent = 'Unlock Panels';
                     lockBtn.className = 'btn btn-warning';
-
                     panels.forEach(panel => {
                         panel.draggable = false;
                     });
-
-                    showNotification('🔒 All panels locked - drag disabled', 'warning');
-                    debugLog('All panels locked');
                 } else {
-                    // Unlock panels
                     lockIcon.className = 'fas fa-lock-open';
                     lockText.textContent = 'Lock Panels';
                     lockBtn.className = 'btn btn-secondary';
-
                     panels.forEach(panel => {
                         panel.draggable = true;
                     });
-
-                    showNotification('🔓 All panels unlocked - drag enabled', 'success');
-                    debugLog('All panels unlocked');
                 }
             }
     </script>
