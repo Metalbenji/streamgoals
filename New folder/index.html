@@ -4373,21 +4373,6 @@
         function handleTwitchSub(data) {
             debugLog('Processing Twitch Sub:', data);
 
-            function handleTwitchGiftBomb(data) {
-                debugLog('Processing Twitch Gift Bomb:', data);
-
-                // Extract gifter info and number of subs gifted
-                const gifterName = data.gifterUserName || data.gifterDisplayName || data.user?.name || 'Someone';
-                const subCount = data.gifts || data.subCount || data.count || 1;
-
-                // Add all gifted subs to the total
-                appState.goals.twitch.subscribers += subCount;
-                updateGoal('twitch', 'subscribers');
-
-                showNotification(`🎁💥 ${gifterName} gifted ${subCount} subs!`, 'success');
-                debugLog(`🎁💥 Gift bomb: ${gifterName} gifted ${subCount} subs`);
-            }
-
             // Extract user info according to Streamer.bot Twitch event documentation
             const userName = data.userName || data.displayName || data.user?.name || data.user_name || data.user?.login || 'Someone';
 
@@ -4504,7 +4489,7 @@
 
                     // Update stored count
                     lastYouTubeSubscriberCount = numericSubscriberCount;
-            } else {
+                } else {
                     // No change detected from last poll - silent update, but UI will still refresh
                     debugLog(`📊 YouTube: Count received (${numericSubscriberCount}) matches last poll. UI will be updated.`);
                 }
@@ -4520,8 +4505,8 @@
                 if (data.likeCount) {
                     debugLog(`📊 YouTube Likes: ${data.likeCount}`);
                 }
-            } // This closes the else block
-        } // This is the added closing brace for the handleYouTubeStatistics function
+            } // closes if (subscriberCount !== undefined && subscriberCount !== null)
+        } // closes handleYouTubeStatistics
             // NEW: StreamElements donation handler - consolidated
             function handleStreamElementsDonation(data) {
                 debugLog('Processing StreamElements Donation:', data);
