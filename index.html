@@ -1547,6 +1547,13 @@
                 </div>
             </div>
             <div class="form-group">
+                <label>WebSocket Password</label>
+                <input type="password" id="streamerbotPassword" class="form-control" placeholder="Leave blank if authentication is disabled in Streamer.bot" oninput="saveSettings(false)">
+                <small style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
+                    💡 Only needed if you enabled WebSocket Server Authentication in Streamer.bot
+                </small>
+            </div>
+            <div class="form-group">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                     <label style="margin-bottom: 0;">Connection Status</label>
                     <div id="sbConnectionStatus" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
@@ -2846,6 +2853,7 @@
                 connection: {
                     server: '127.0.0.1',
                     port: '8080',
+                    password: '',
                     autoReconnect: true,
                     maxAttempts: 10,
                     initialDelay: 3
@@ -3123,6 +3131,9 @@
 
                 debugLog('💾 State saved to URL');
 
+                // Mirror state to localStorage so it survives OBS browser source refreshes
+                saveStateToLocalStorage();
+
                 return newUrl.toString();
 
             } catch (error) {
@@ -3159,9 +3170,47 @@
             return true;
         }
 
+        function saveStateToLocalStorage() {
+            try {
+                const config = {
+                    goals: appState.goals,
+                    settings: appState.settings,
+                    savedAt: new Date().toISOString()
+                };
+                localStorage.setItem('streamgoals_state_v1', JSON.stringify(config));
+                debugLog('💾 State saved to localStorage');
+                return true;
+            } catch (error) {
+                debugLog('💥 Failed to save state to localStorage:', error);
+                return false;
+            }
+        }
+
+        function loadStateFromLocalStorage() {
+            try {
+                const raw = localStorage.getItem('streamgoals_state_v1');
+                if (!raw) return false;
+
+                const config = JSON.parse(raw);
+                if (!config.goals || !config.settings) return false;
+
+                Object.keys(config.goals).forEach(platform => {
+                    Object.keys(config.goals[platform]).forEach(metric => {
+                        appState.goals[platform][metric] = config.goals[platform][metric];
+                    });
+                });
+                appState.settings = { ...appState.settings, ...config.settings };
+
+                debugLog('✅ State loaded from localStorage');
+                return true;
+            } catch (error) {
+                debugLog('💥 Failed to load state from localStorage:', error);
+                return false;
+            }
+        }
+
         function loadFallbackData() {
             debugLog('🔄 Loading fallback test data for overlay...');
-
             // Set some test data so overlay shows something
             appState.goals.twitch.followers = 15;
             appState.goals.twitch.subscribers = 5;
@@ -4150,6 +4199,77 @@
             }, reconnectionDelay);
         }
 
+        function subscribeToEvents() {
+            const subscribeMessage = {
+                request: 'Subscribe',
+                id: 'streamgoals-subscription-1',
+                events: {
+                    'Twitch': ['Follow', 'Sub', 'ReSub', 'GiftSub', 'GiftBomb', 'Cheer'],
+                    'YouTube': ['NewSponsor', 'MemberMileStone', 'MembershipGift',
+                        'GiftMembershipReceived', 'StatisticsUpdated'
+                    ],
+                    'Kick': ['Follow', 'Sub', 'GiftSub', 'Host'], // ADD THIS IF STREAMER.BOT SUPPORTS IT
+                    'StreamElements': ['Tip'],
+                    'StreamLabs': ['Donation'],
+                    'General': ['Custom']
+                }
+            };
+
+            // Optional: Pass channel info if Streamer.bot needs it
+            if (appState.settings.kick.channelName && appState.settings.kick.enabled) {
+                subscribeMessage.kickChannel = appState.settings.kick.channelName;
+            }
+
+            debugLog('Sending CORRECTED subscription message with ID:', subscribeMessage);
+            streamerbotClient.send(JSON.stringify(subscribeMessage));
+        }
+
+        async function authenticateWithStreamerBot(authentication) {
+            const password = appState.settings.connection.password || '';
+            if (!password) {
+                throw new Error('Password not configured');
+            }
+
+            const hashBase64 = async (input) => {
+                const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+                return btoa(String.fromCharCode.apply(null, new Uint8Array(digest)));
+            };
+
+            const firstHash = await hashBase64(password + authentication.salt);
+            const finalHash = await hashBase64(firstHash + authentication.challenge);
+
+            await new Promise((resolve, reject) => {
+                function onAuthMessage(event) {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.request === 'Authenticate') {
+                            clearTimeout(timeout);
+                            streamerbotClient.removeEventListener('message', onAuthMessage);
+                            if (msg.status === 'ok') {
+                                resolve(msg);
+                            } else {
+                                reject(new Error(msg.error || 'Authentication failed'));
+                            }
+                        }
+                    } catch (e) { /* ignore non-JSON messages */ }
+                }
+
+                const timeout = setTimeout(() => {
+                    streamerbotClient.removeEventListener('message', onAuthMessage);
+                    reject(new Error('Authentication timed out'));
+                }, 10000);
+
+                streamerbotClient.addEventListener('message', onAuthMessage);
+                streamerbotClient.send(JSON.stringify({
+                    request: 'Authenticate',
+                    id: 'streamgoals-auth-' + Date.now(),
+                    authentication: finalHash
+                }));
+            });
+
+            debugLog('✅ Authentication successful');
+        }
+
         // Enhanced message handling with better debugging
         function handleStreamerBotMessage(data) {
             debugLog('=== Processing Streamer.bot Message ===', data);
@@ -4159,32 +4279,20 @@
                 debugLog('Received Hello message from Streamer.bot', data.info);
                 showNotification(`📡 Connected to ${data.info.name} v${data.info.version}`, 'success');
 
+                // If Streamer.bot requires authentication, authenticate first
+                if (data.authentication) {
+                    debugLog('🔐 Streamer.bot requires authentication');
+                    authenticateWithStreamerBot(data.authentication).then(() => {
+                        setTimeout(subscribeToEvents, 1000);
+                    }).catch((error) => {
+                        debugLog('💥 Authentication failed:', error);
+                        showNotification('❌ Authentication failed: ' + error, 'error');
+                    });
+                    return;
+                }
+
                 // Send subscription after Hello message
-                setTimeout(() => {
-                    const subscribeMessage = {
-                        request: 'Subscribe',
-                        id: 'streamgoals-subscription-1',
-                        events: {
-                            'Twitch': ['Follow', 'Sub', 'ReSub', 'GiftSub', 'GiftBomb', 'Cheer'],
-                            'YouTube': ['NewSponsor', 'MemberMileStone', 'MembershipGift',
-                                'GiftMembershipReceived', 'StatisticsUpdated'
-                            ],
-                            'Kick': ['Follow', 'Sub', 'GiftSub', 'Host'], // ADD THIS IF STREAMER.BOT SUPPORTS IT
-                            'StreamElements': ['Tip'],
-                            'StreamLabs': ['Donation'],
-                            'General': ['Custom']
-                        }
-                    };
-
-                    // Optional: Pass channel info if Streamer.bot needs it
-                    if (appState.settings.kick.channelName && appState.settings.kick.enabled) {
-                        subscribeMessage.kickChannel = appState.settings.kick.channelName;
-                    }
-
-
-                    debugLog('Sending CORRECTED subscription message with ID:', subscribeMessage);
-                    streamerbotClient.send(JSON.stringify(subscribeMessage));
-                }, 1000);
+                setTimeout(subscribeToEvents, 1000);
                 return;
             }
 
@@ -5382,6 +5490,7 @@
                 // Load connection settings
                 document.getElementById('streamerbotServer').value = appState.settings.connection.server || '127.0.0.1';
                 document.getElementById('streamerbotPort').value = appState.settings.connection.port || '8080';
+                document.getElementById('streamerbotPassword').value = appState.settings.connection.password || '';
 
                 document.getElementById('autoReconnectEnabled').checked = appState.settings.connection.autoReconnect;
                 document.getElementById('maxReconnectAttempts').value = appState.settings.connection.maxAttempts;
@@ -5579,6 +5688,7 @@
                 // Connection settings
                 const server = document.getElementById('streamerbotServer').value;
                 const port = document.getElementById('streamerbotPort').value;
+                const password = document.getElementById('streamerbotPassword').value;
 
                 const autoReconnect = document.getElementById('autoReconnectEnabled').checked;
                 const maxAttempts = parseInt(document.getElementById('maxReconnectAttempts').value);
@@ -5655,6 +5765,7 @@
                 // Save connection settings
                 appState.settings.connection.server = server;
                 appState.settings.connection.port = port;
+                appState.settings.connection.password = password;
                 appState.settings.connection.autoReconnect = autoReconnect;
                 appState.settings.connection.maxAttempts = maxAttempts;
                 appState.settings.connection.initialDelay = initialDelay;
@@ -6799,7 +6910,11 @@
                     overlayView.classList.add('active');
 
                     // Load data from URL parameters
-                    const dataLoaded = loadStateFromUrl();
+                    let dataLoaded = loadStateFromUrl();
+                    if (!dataLoaded) {
+                        // Fall back to locally persisted state (survives OBS refresh)
+                        dataLoaded = loadStateFromLocalStorage();
+                    }
                     if (!dataLoaded) {
                         debugLog('⚠️ No URL data found - using fallback data');
                         loadFallbackData();
@@ -6921,7 +7036,10 @@
                     updatePreviewFills();
 
                     // Load state from URL parameters
-                    loadStateFromUrl();
+                    if (!loadStateFromUrl()) {
+                        // Fall back to locally persisted state
+                        loadStateFromLocalStorage();
+                    }
 
                     loadSettings();
                     updateConnectionStatus();
