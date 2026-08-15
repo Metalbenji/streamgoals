@@ -4362,7 +4362,7 @@
             debugLog('Processing Twitch Follow:', data);
 
             // Extract user info according to Streamer.bot Twitch event documentation
-            const userName = data.userName || data.displayName || data.user_name || data.user?.login || 'Someone';
+            const userName = data.user?.name || data.user?.login || data.userName || data.displayName || data.user_name || 'Someone';
 
             appState.goals.twitch.followers++;
             updateGoal('twitch', 'followers');
@@ -4374,11 +4374,11 @@
             debugLog('Processing Twitch Sub:', data);
 
             // Extract user info according to Streamer.bot Twitch event documentation
-            const userName = data.userName || data.displayName || data.user?.name || data.user_name || data.user?.login || 'Someone';
+            const userName = data.user?.name || data.user?.login || data.userName || data.displayName || data.user_name || 'Someone';
 
             // Check if this is a gifted sub
             const isGifted = data.isGifted || data.gifted || false;
-            const gifterName = data.gifterUserName || data.gifterDisplayName || data.gifter?.name || null;
+            const gifterName = data.user?.name || data.user?.login || data.gifterUserName || data.gifterDisplayName || data.gifter?.name || null;
 
             appState.goals.twitch.subscribers++;
             updateGoal('twitch', 'subscribers');
@@ -4400,9 +4400,8 @@
             debugLog('Processing Twitch Cheer:', data);
 
             // Handle Cheer data structure from Streamer.bot documentation
-            const message = data.message || data;
-            const userName = message.displayName || message.username || data.userName || 'Someone';
-            const bits = message.bits || data.bits || 0;
+            const userName = data.user?.name || data.user?.login || data.displayName || data.username || data.userName || 'Someone';
+            const bits = data.bits || 0;
 
             // Add bits to total (not count of cheer events)
             appState.goals.twitch.cheers += bits;
@@ -4415,8 +4414,8 @@
             debugLog('Processing Twitch Gift Bomb:', data);
 
             // Extract gifter info and number of subs gifted
-            const gifterName = data.gifterUserName || data.gifterDisplayName || data.user?.name || 'Someone';
-            const subCount = data.gifts || data.subCount || data.count || 1;
+            const gifterName = data.user?.name || data.user?.login || data.gifterUserName || data.gifterDisplayName || 'Someone';
+            const subCount = data.total || data.gifts || data.subCount || data.count || 1;
 
             // Add all gifted subs to the total
             appState.goals.twitch.subscribers += subCount;
